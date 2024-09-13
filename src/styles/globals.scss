@@ -1,0 +1,175 @@
+@import "./variables.scss";
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Satisfy&display=swap");
+
+@font-face {
+  font-family: "SilverForte";
+  src: url("./../public/Silver\ Forte\ GrungeDEMO.ttf") format("truetype");
+}
+@font-face {
+  font-family: "GothamBlack";
+  src: url("./../public/Gotham-Black.otf") format("truetype");
+}
+
+@font-face {
+  font-family: "gothamBold";
+  src: url("./assets/fonts/GothamBold.ttf");
+}
+
+@font-face {
+  font-family: "AntonioBold";
+  src: url("./assets/fonts/Antonio-Bold.ttf");
+}
+
+.silverForteFont {
+  font-family: "SilverForte", sans-serif;
+}
+
+.gothamBlack {
+  font-family: "GothamBlack", sans-serif;
+  color: #000;
+}
+
+:root {
+  --themeColor1: #185327;
+  --themeColor2: #d23a39;
+  --themeColor3: yellow;
+  --textColor: #202021;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* font-family: "amazon amber", sans-serif; */
+}
+
+body {
+  height: 100dvh;
+  overflow-x: hidden;
+  background-image: url("./assets/BG.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+h1 {
+  font-size: 4.2vh;
+  text-align: center;
+  font-family: "gothamBold";
+}
+
+h2 {
+  font-family: "AntonioBold";
+  font-size: 5.5vh;
+  color: var(--themeColor2);
+}
+
+a {
+  /* color: #646cff; */
+  text-decoration: none;
+}
+
+img {
+  height: 100%;
+  width: 100%;
+}
+
+.imgContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  border: none;
+  outline: none;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  position: relative;
+  animation: rotate 1s linear infinite;
+}
+.loader::before {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0px;
+  border-radius: 50%;
+  border: 5px solid #000;
+  animation: prixClipFix 2s linear infinite;
+}
+
+.flex-row-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn1 {
+  /* color: var(--textColor); */
+  width: 56vw;
+  font-size: 3.3vh;
+  font-weight: 600;
+  padding: 0.8vw 0;
+  border: 0.3vw solid var(--textColor);
+  border-radius: 10vw;
+  background-color: var(--themeColor1);
+  color: #fff !important;
+  border: none !important;
+}
+
+.btn1:disabled {
+  opacity: 0.5;
+}
+
+.btn2 {
+  color: var(--textColor);
+  width: 28vw;
+  font-size: 5.5vw;
+  font-weight: 600;
+  padding: 0.5vw 0;
+  border: 0.3vw solid var(--textColor);
+  border-radius: 5vw;
+  /* background: linear-gradient(
+    to right,
+    var(--themeColor1) 0%,
+    var(--themeColor2) 40%,
+    var(--themeColor2) 60%,
+    var(--themeColor3) 100%
+  ); */
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes prixClipFix {
+  0% {
+    clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0);
+  }
+  25% {
+    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 0, 100% 0, 100% 0);
+  }
+  50% {
+    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);
+  }
+  75% {
+    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 100%);
+  }
+  100% {
+    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+  }
+}
