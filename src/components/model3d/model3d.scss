@@ -1,0 +1,16 @@
+.Model3d {
+  border: 5px solid red;
+  height: 90vh;
+
+  /* Disable right-click context menu */
+}
+
+canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  outline: none;
+}
