@@ -12,12 +12,10 @@ import submitBtn from "./../../assets/cameraPage/submitBtn.png";
 import frame from "./../../assets/cameraPage/frame.png";
 import cameraPageBg from "./../../assets/cameraPage/cameraPageBg.png";
 import logo from "./../../assets/logo.png";
-import { Link } from "react-router-dom";
 
 import { uploadImage } from "../../utils/uploadFirebase";
 
-
-export default function CameraPage({setUrl}) {
+export default function CameraPage({ setUrl }) {
   const screenshotRef = useRef();
   const navigate = useNavigate();
   const [isCaptured, setIsCaptured] = useState(false);
@@ -37,8 +35,8 @@ export default function CameraPage({setUrl}) {
     setCapturedImg("");
   };
 
-  const submitImg = async() => {
-    if(capturedImg){
+  const submitImg = async () => {
+    if (capturedImg) {
       let downloadUrl = await uploadImage(capturedImg);
       setUrl(downloadUrl);
     }
@@ -74,7 +72,10 @@ export default function CameraPage({setUrl}) {
                 <Webcam id="webcam" forceScreenshotSourceSize={true} />
 
                 {/* 3d model */}
-                <Model3d />
+                {/* <Model3d /> */}
+                <div className="modelContainer flex-row-center">
+                  <img src={"/model.png"} alt="model" />
+                </div>
               </div>
             )}
 
@@ -84,12 +85,6 @@ export default function CameraPage({setUrl}) {
             </div>
           </div>
         </div>
-
-
-        {/* btn */}
-        <Link to="/camera" className="startBtnContainer flex-row-center">
-          {/* <img src={startBtn} alt="startBtn" /> */}
-        </Link>
 
         {/* btns */}
         {isCaptured ? (
@@ -115,7 +110,6 @@ export default function CameraPage({setUrl}) {
             <img src={captureBtn} alt="captureBtn" />
           </div>
         )}
-
       </div>
     </div>
   );
