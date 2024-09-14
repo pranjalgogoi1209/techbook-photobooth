@@ -19,7 +19,7 @@ function Model({ position, rotation }) {
   return (
     <primitive
       object={scene}
-      scale={2}
+      scale={3}
       position={position}
       rotation={rotation}
     />
@@ -27,8 +27,8 @@ function Model({ position, rotation }) {
 }
 
 export default function Model3d() {
-  const [position, setPosition] = useState([0, -2, 0]);
-  const [rotation, setRotation] = useState([0, 0, 0]);
+  const [position, setPosition] = useState([-0.7, -3, 0]);
+  const [rotation, setRotation] = useState([0, 0.2, 0]);
 
   // Function to handle arrow key presses and update the position
   const handleKeyDown = (event) => {
@@ -63,7 +63,7 @@ export default function Model3d() {
   }, []);
 
   return (
-    <div className="Model3d">
+    <div className="Model3d flex-col-center">
       <Canvas
         gl={{
           antialias: true,
@@ -89,16 +89,16 @@ export default function Model3d() {
         {/* Controls to rotate and zoom the model */}
         <OrbitControls
           enableZoom={true}
-          zoomSpeed={0.6}
+          zoomSpeed={0.5}
           enableRotate={true}
-          rotateSpeed={1}
+          rotateSpeed={0.5}
           enablePan={true}
-          panSpeed={1.5}
+          panSpeed={1}
           screenSpacePanning={true}
           minPolarAngle={1}
           maxPolarAngle={2}
-          minDistance={5}
-          maxDistance={20}
+          minDistance={4}
+          maxDistance={10}
         />
       </Canvas>
     </div>
