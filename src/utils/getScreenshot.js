@@ -1,29 +1,15 @@
-const getScreenshot = (template, callback) => {
-  if (typeof document === "undefined") return;
+import html2canvas from "html2canvas";
 
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
+const getScreenshot = (element, callback) => {
+  if (!element) return;
 
-  const getImageData = (img) => {
-    canvas.width = img.width;
-    canvas.height = img.height;
-    context.drawImage(img, 0, 0);
-    console.log(canvas.toDataURL("image/jpg"));
+  console.log(element);
 
-    return canvas.toDataURL("image/jpg");
-  };
-
-  console.log(template);
-
-  var img = new Image();
-  img.crossOrigin = "Anonymous";
-  img.src = template;
-
-  img.onload = () => {
-    const base64Data = getImageData(img);
-    console.log("base64", base64Data);
-    callback(base64Data);
-  };
+  // Use html2canvas to capture the screenshot of the entire DOM element
+  html2canvas(element, { useCORS: true }).then((canvas) => {
+    const base64Image = canvas.toDataURL("image/png");
+    callback(base64Image);
+  });
 };
 
 export default getScreenshot;

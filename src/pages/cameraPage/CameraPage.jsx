@@ -16,23 +16,20 @@ import logo from "./../../assets/logo.png";
 export default function CameraPage() {
   const screenshotRef = useRef();
   const navigate = useNavigate();
-  const [img, setImg] = useState();
   const [isCaptured, setIsCaptured] = useState(false);
-  const [countdown, setCountdown] = useState(3);
-  const [isCounting, setIsCounting] = useState(false);
   const [capturedImg, setCapturedImg] = useState();
 
   const captureImg = () => {
     setIsCaptured(true);
+
     getScreenshot(screenshotRef.current, (base64Data) => {
-      console.log("working");
       console.log(base64Data);
       setCapturedImg(base64Data);
     });
   };
 
   const retakeImg = () => {
-    setCapturedImg(false);
+    setIsCaptured(false);
     setCapturedImg("");
   };
 
@@ -55,16 +52,22 @@ export default function CameraPage() {
 
           {/* camera container */}
           <div className="cameraContainer flex-row-center">
-            <div
-              ref={screenshotRef}
-              className="webcamWithModel flex-row-center"
-            >
-              {/* webcam */}
-              <Webcam id="webcam" forceScreenshotSourceSize={true} />
+            {capturedImg ? (
+              <div className="capturedImgContainer flex-row-center">
+                <img src={capturedImg} alt="capturedImg" />
+              </div>
+            ) : (
+              <div
+                ref={screenshotRef}
+                className="webcamWithModel flex-row-center"
+              >
+                {/* webcam */}
+                <Webcam id="webcam" forceScreenshotSourceSize={true} />
 
-              {/* 3d model */}
-              {/* <Model3d /> */}
-            </div>
+                {/* 3d model */}
+                <Model3d />
+              </div>
+            )}
 
             {/* frame */}
             <div className="frameContainer flex-row-center">
