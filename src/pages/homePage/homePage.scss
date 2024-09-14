@@ -1,3 +1,17 @@
 .HomePage {
+  width: 100vw;
+  height: 100svh;
   border: 1px solid black;
+  background-image: url('/bg_Home.png');
+  background-position: center;
+  background-size: cover;
+  padding: 12vw;
+  justify-content: space-between !important;
+  .start_button{
+    border: 1px solid red;
+    width: 20vh;
+    button{
+      width: 100%;
+    }
+  }
 }
