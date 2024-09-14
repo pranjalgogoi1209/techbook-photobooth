@@ -1,4 +1,4 @@
-import { getStorage,getDownloadURL,uploadString,ref,storage } from 'firebase/storage';
+import { getStorage,getDownloadURL,uploadString,ref } from 'firebase/storage';
 import {db} from '../firebase'
 import { collection,addDoc } from 'firebase/firestore';
 
@@ -11,28 +11,27 @@ function getUID() {
 }
 
 
- export const uploadImage = async (ref) => {
-    const canvas = ref.current;
-    // Convert canvas to data URL
-    const dataURL = canvas.toDataURL('image/png');  
+ export const uploadImage = async (base64) => {
 
+  const dataURL = base64.split(",")[1];
     try {
-      setLoading(true);
-      const storageRef = ref(storage, `techbook_ai_photo_booth/image_${Date.now()}.png`);  // Create a reference in Firebase Storage
+      // setLoading(true);
+      const storageRef = ref(storage, `techbook/techbook_ai_photobooth_image_${Date.now()}.png`);  // Create a reference in Firebase Storage
       await uploadString(storageRef, dataURL, 'base64');  // Upload the image
       //get download url
       const downloadURL = await getDownloadURL(storageRef);
       //setDownloadUrl
     //setDownloadUrl(downloadURL); 
 
-      const valueRef = collection(db,'collection_name');
+    // console.log(downloadURL);
+      const valueRef = collection(db,'Techbook_Photo_Booth_testing');
       await addDoc(valueRef,
          {
         imageUrl: downloadURL,
-        createdAt: new Date(),
+        createdAt: Date.now(),
       }
     );
-
+    return downloadURL;
       console.log('Image metadata saved to Firestore');
     } catch (error) {
       console.error('Error uploading image or saving to Firestore:', error);
