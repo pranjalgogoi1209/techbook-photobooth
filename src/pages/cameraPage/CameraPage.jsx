@@ -5,6 +5,8 @@ import retakeBtn from "./../../assets/cameraPage/retakeBtn.png";
 import submitBtn from "./../../assets/cameraPage/submitBtn.png";
 import cameraPageBg from "./../../assets/cameraPage/cameraPageBg.png";
 import logo from "./../../assets/logo.png";
+import { Link } from "react-router-dom";
+
 
 export default function CameraPage() {
   return (
@@ -23,7 +25,7 @@ export default function CameraPage() {
 
         {/* btn */}
         <Link to="/camera" className="startBtnContainer flex-row-center">
-          <img src={startBtn} alt="startBtn" />
+          {/* <img src={startBtn} alt="startBtn" /> */}
         </Link>
       </div>
     </div>
