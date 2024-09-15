@@ -13,20 +13,19 @@ import frame from "./../../assets/cameraPage/frame.png";
 import cameraPageBg from "./../../assets/cameraPage/cameraPageBg.png";
 import logo from "./../../assets/logo.png";
 
-import { uploadImage } from "../../utils/uploadFirebase";
-
-export default function CameraPage({ setUrl }) {
+export default function CameraPage({ capturedImg, setCapturedImg }) {
   const screenshotRef = useRef();
   const navigate = useNavigate();
   const [isCaptured, setIsCaptured] = useState(false);
-  const [capturedImg, setCapturedImg] = useState();
   const [postion, setPosition] = useState({
-    top: 1.5,
-    left: -2,
+    top: 1,
+    left: -1.5,
   });
   const [isCounting, setIsCounting] = useState(false);
   const [counting, setCounting] = useState(5);
   const [size, setSize] = useState(20);
+
+  console.log(postion);
 
   const captureImg = () => {
     setIsCounting(true);
@@ -40,9 +39,7 @@ export default function CameraPage({ setUrl }) {
   };
 
   const submitImg = async () => {
-    if (capturedImg) {
-      let downloadUrl = await uploadImage(capturedImg);
-      setUrl(downloadUrl);
+    if (isCaptured) {
       navigate("/output");
     }
   };
@@ -95,6 +92,8 @@ export default function CameraPage({ setUrl }) {
 
   // countdown and screenshot logic
   useEffect(() => {
+    // console.log("counting", isCounting, counting);
+
     let countdownInterval;
 
     if (isCounting && counting > 0) {
@@ -104,6 +103,7 @@ export default function CameraPage({ setUrl }) {
     } else if (isCounting && counting === 0) {
       // Capture the screenshot when countdown hits 0
       setIsCaptured(true);
+
       getScreenshot(screenshotRef.current, (base64Data) => {
         console.log(base64Data);
         setCapturedImg(base64Data);
@@ -162,9 +162,13 @@ export default function CameraPage({ setUrl }) {
 
           {/* camera container */}
           <div className="cameraContainer flex-row-center">
-            {capturedImg ? (
+            {isCaptured ? (
               <div className="capturedImgContainer flex-row-center">
-                <img src={capturedImg} alt="capturedImg" />
+                {capturedImg ? (
+                  <img src={capturedImg} alt="capturedImg" />
+                ) : (
+                  <span className="loader2"></span>
+                )}
               </div>
             ) : (
               <div
@@ -172,7 +176,11 @@ export default function CameraPage({ setUrl }) {
                 className="webcamWithModel flex-row-center"
               >
                 {/* webcam */}
-                <Webcam id="webcam" forceScreenshotSourceSize={true} />
+                <Webcam
+                  id="webcam"
+                  forceScreenshotSourceSize={true}
+                  mirrored={true}
+                />
 
                 {!isCaptured && isCounting && (
                   <h1 className="countdown">{counting}</h1>

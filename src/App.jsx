@@ -9,21 +9,18 @@ import { db } from "./firebase";
 
 function App() {
   const [url, setUrl] = useState();
-
-  useEffect(() => {
-    console.log(url);
-  }, [url]);
+  const [capturedImg, setCapturedImg] = useState("");
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "Techbook_Photo_Booth_testing"),
       (snapshot) => {
         try {
-          const alldata = snapshot.docs.map((doc) => ({
+          let alldata = snapshot.docs.map((doc) => ({
             ...doc.data(),
             id: doc.id,
           }));
-
+          alldata = alldata.sort((a, b) => b.createdAt - a.createdAt);
           console.log(alldata);
         } catch (error) {
           console.log(error);
@@ -37,9 +34,25 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/camera" element={<CameraPage setUrl={setUrl} />} />
-        <Route path="/output" element={<OutputPage />} />
+        <Route
+          path="/"
+          element={<HomePage setUrl={setUrl} setCapturedImg={setCapturedImg} />}
+        />
+        <Route
+          path="/camera"
+          element={
+            <CameraPage
+              capturedImg={capturedImg}
+              setCapturedImg={setCapturedImg}
+            />
+          }
+        />
+        <Route
+          path="/output"
+          element={
+            <OutputPage url={url} setUrl={setUrl} capturedImg={capturedImg} />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

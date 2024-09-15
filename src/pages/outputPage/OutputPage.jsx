@@ -1,11 +1,29 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./outputPage.scss";
 import { Link } from "react-router-dom";
+import QRCode from "react-qr-code";
+import { uploadImage } from "../../utils/uploadFirebase";
+
 import outputPageBg from "./../../assets/cameraPage/cameraPageBg.png";
 import logo from "./../../assets/logo.png";
 import homeBtn from "./../../assets/homePage/homeBtn.png";
+import qrFrame from "./../../assets/outputPage/qrFrame.png";
 
-function OutputPage() {
+function OutputPage({ url, setUrl, capturedImg }) {
+  // Customize the colors
+  const qrColor = "#000000"; // Foreground color (QR code)
+  const qrBgColor = "#ffffff"; // Background color
+
+  useEffect(() => {
+    async function uploadAndSetUrl() {
+      if (capturedImg) {
+        const downloadUrl = await uploadImage(capturedImg);
+        setUrl(downloadUrl);
+      }
+    }
+    uploadAndSetUrl();
+  }, [capturedImg]);
+
   return (
     <div className="OutputPage flex-col-center">
       {/* bg */}
@@ -20,12 +38,30 @@ function OutputPage() {
           <div className="logoContainer flex-row-center">
             <img src={logo} alt="logo" />
           </div>
+
           {/* qr section */}
-          <div className="qrSection flex-col-center">
-            <div className="qrcodeImg flex-row-center"></div>
-            <h2>SCAN,SHARE & SAVE</h2>
+          <div className="qrContainer flex-row-center">
+            <div className="qrcodeImg flex-row-center">
+              {url ? (
+                <QRCode
+                  size={256}
+                  value={url}
+                  fgColor={qrColor}
+                  bgColor={qrBgColor}
+                  id="qrCode"
+                />
+              ) : (
+                <span className="loader"></span>
+              )}
+            </div>
+
+            {/* qr frame */}
+            <div className="qrFrameContainer flex-row-center">
+              <img src={qrFrame} alt="qrFrame" />
+            </div>
           </div>
         </div>
+
         {/* home btn */}
         <Link to="/" className="homeBtnContainer flex-row-center">
           <img src={homeBtn} alt="" />

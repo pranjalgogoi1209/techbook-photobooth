@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./homePage.scss";
 import { Link } from "react-router-dom";
 
@@ -6,7 +6,11 @@ import homeBg from "./../../assets/homePage/homeBg.png";
 import logo from "./../../assets/logo.png";
 import startBtn from "./../../assets/homePage/startBtn.png";
 
-export default function HomePage() {
+export default function HomePage({ setUrl, setCapturedImg }) {
+  useEffect(() => {
+    setUrl("");
+    setCapturedImg("");
+  }, []);
   return (
     <div className="HomePage flex-col-center">
       {/* bg */}

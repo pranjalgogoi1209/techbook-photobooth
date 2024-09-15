@@ -1,5 +1,9 @@
 $color-one: #212121;
 
+.my-camera-custom-class {
+  transform: scaleX(-1) !important;
+}
+
 .CameraPage {
   height: 100svh;
   position: relative;
@@ -26,10 +30,9 @@ $color-one: #212121;
         position: relative;
         width: 30vh;
         height: 40vh;
-        outline: 2.5vw solid $color-one;
-        outline-offset: -2.5vw;
-        // border: 2.5vw solid $color-one;
-
+        /*  outline: 2.5vw solid $color-one;
+        outline-offset: -2.5vw; */
+        border: 2.5vw solid $color-one;
         border-radius: 2vw;
         overflow: hidden;
         .webcamWithModel {
@@ -42,7 +45,7 @@ $color-one: #212121;
             object-fit: cover;
           }
           .modelContainer {
-            // border: 10px solid green;
+            // border: 1px solid green;
             position: absolute;
             height: auto;
           }
@@ -65,9 +68,9 @@ $color-one: #212121;
         }
         .capturedImgContainer {
           background-color: $color-one;
-          // border: 10px solid red;
-          outline: 2.5vw solid $color-one;
-          outline-offset: -2.5vw;
+          /*          outline: 2.5vw solid $color-one;
+          outline-offset: -2.5vw; */
+          transform: scaleX(-1);
         }
       }
     }
@@ -81,5 +84,30 @@ $color-one: #212121;
     .retakeSubmitBtnContainer {
       gap: 2vh;
     }
+  }
+}
+
+.loader2 {
+  width: 2vh;
+  height: 2vh;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 4vh 0 #fff, -4vh 0 #fff;
+  position: relative;
+  animation: flash 0.2s ease-out infinite alternate;
+}
+
+@keyframes flash {
+  0% {
+    background-color: #fff2;
+    box-shadow: 4vh 0 #fff2, -4vh 0 #fff;
+  }
+  50% {
+    background-color: #fff;
+    box-shadow: 4vh 0 #fff2, -4vh 0 #fff2;
+  }
+  100% {
+    background-color: #fff2;
+    box-shadow: 4vh 0 #fff, -4vh 0 #fff2;
   }
 }

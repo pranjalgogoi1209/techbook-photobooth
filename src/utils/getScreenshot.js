@@ -3,9 +3,18 @@ import html2canvas from "html2canvas";
 const getScreenshot = (element, callback) => {
   if (!element) return;
 
-  console.log(element);
+  // flip the model
+  const modelElement = element.querySelector(".modelContainer");
+  if (modelElement) {
+    // videoElement.classList.add("my-camera-custom-class");
+    modelElement.style.right = modelElement.style.left;
+    console.log(modelElement.style.right);
+    modelElement.style.left = "";
+  }
 
-  // Use html2canvas to capture the screenshot of the entire DOM element
+  // flip the image
+  // element.style.transform = "scaleX(-1)";
+
   html2canvas(element, { useCORS: true }).then((canvas) => {
     const base64Image = canvas.toDataURL("image/png");
     callback(base64Image);
