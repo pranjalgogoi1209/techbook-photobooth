@@ -1,41 +1,40 @@
-.OutputPage{
-    height: 100svh;
-    position: relative;
-    .outputBgContainer{
-        width: 100%;
-        height: 100%;
-    }
-    .qrCodeContainer{
-        height: 75%;
-        position: absolute;
-        inset: 0;
-        top: 20%;
-        justify-content: space-between;
-        .wrapper{
-            gap: 6.2vh;
-            .logoContainer{
-                width: 35vh;
-            }
-            .qrSection{
-                position: relative;
-                width: 36vh;
-                height: 40vh;
-                border-radius: 0.9vh;
-                padding: 1.4vh;
-                // border: 1px solid red;
-                gap: 2vh;
-                .qrcodeImg{
-                    background-color: white;
-                    width: 100%;
-                    height: 100%;
-                }
-                                
-                background-color: #000;
-                h2{
-                    color: #fff;
-                    font-size: 3vh;
-                }
-            }
+.OutputPage {
+  height: 100svh;
+  position: relative;
+  .outputBgContainer {
+    width: 100%;
+    height: 100%;
+  }
+  .qrCodeContainer {
+    height: 75%;
+    position: absolute;
+    inset: 0;
+    top: 20%;
+    justify-content: space-between;
+    .wrapper {
+      gap: 6.2vh;
+      .logoContainer {
+        width: 35vh;
+      }
+      .qrSection {
+        position: relative;
+        width: 36vh;
+        height: 40vh;
+        border-radius: 0.9vh;
+        padding: 1.4vh;
+        border: 1px solid red;
+        gap: 2vh;
+        .qrcodeImg {
+          // background-color: white;
+          width: 100%;
+          height: 100%;
         }
+
+        h2 {
+          color: #fff;
+          font-size: 3vh;
+        }
+      }
     }
+  }
 }

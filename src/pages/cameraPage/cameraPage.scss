@@ -1,3 +1,5 @@
+$color-one: #212121;
+
 .CameraPage {
   height: 100svh;
   position: relative;
@@ -16,55 +18,56 @@
     .wrapper {
       // border: 1px solid black;
       overflow: hidden;
-
       gap: 6.2vh;
       .logoContainer {
         width: 35vh;
       }
       .cameraContainer {
         position: relative;
-        // border: 2px solid red;
         width: 30vh;
         height: 40vh;
+        outline: 2.5vw solid $color-one;
+        outline-offset: -2.5vw;
+        // border: 2.5vw solid $color-one;
+
+        border-radius: 2vw;
         overflow: hidden;
         .webcamWithModel {
-          width: 95%;
-          height: 97%;
-          // border: 2px solid red;
+          width: 100%;
+          height: 100%;
           overflow: hidden;
           #webcam {
             width: auto;
             height: 100%;
             object-fit: cover;
-            // transform: rotate(90deg);
           }
           .modelContainer {
             // border: 10px solid green;
             position: absolute;
-            width: 15vh;
             height: auto;
           }
           .countdown {
             position: absolute;
             top: 37%;
-            left: 48%;
-            color: #ffffff;
+            left: 45%;
+            color: $color-one;
             font-size: 8.5vw;
             font-weight: 600;
+            z-index: 2;
           }
         }
-        .frameContainer {
+        .frameContainer,
+        .capturedImgContainer {
           position: absolute;
           inset: 0;
-          width: 100%;
+          width: 100.2%;
           height: 100%;
         }
         .capturedImgContainer {
-          position: absolute;
-          // transform: rotate(90deg);
-          width: 97% !important;
-          height: 97%;
-          border: 10px solid red;
+          background-color: $color-one;
+          // border: 10px solid red;
+          outline: 2.5vw solid $color-one;
+          outline-offset: -2.5vw;
         }
       }
     }
@@ -72,11 +75,11 @@
     .captureBtnContainer,
     .retakeBtnContainer,
     .submitBtnContainer {
-      width: 23vh;
+      width: 22vh;
     }
 
     .retakeSubmitBtnContainer {
-      gap: 5vw;
+      gap: 2vh;
     }
   }
 }

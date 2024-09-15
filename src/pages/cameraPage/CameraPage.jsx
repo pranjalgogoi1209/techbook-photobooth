@@ -20,64 +20,57 @@ export default function CameraPage({ setUrl }) {
   const navigate = useNavigate();
   const [isCaptured, setIsCaptured] = useState(false);
   const [capturedImg, setCapturedImg] = useState();
-  const [postion,setPosition]=useState({
-    top:5,
-    left:1
+  const [postion, setPosition] = useState({
+    top: 1.5,
+    left: -2,
   });
-  const [isCounting,setIsCounting]=useState(false)
-  const [counting,setCounting]=useState(10);
-
-  const [size,setSize]=useState(15)
+  const [isCounting, setIsCounting] = useState(false);
+  const [counting, setCounting] = useState(5);
+  const [size, setSize] = useState(20);
 
   const captureImg = () => {
-    // setIsCaptured(true);
-
-    // getScreenshot(screenshotRef.current, (base64Data) => {
-    //   console.log(base64Data);
-    //   setCapturedImg(base64Data);
-    // });
-    setIsCounting(true)
-    setCounting(10);
+    setIsCounting(true);
+    setCounting(5);
   };
-
 
   const retakeImg = () => {
     setIsCaptured(false);
     setCapturedImg("");
-    setCounting(10)
+    setCounting(5);
   };
 
   const submitImg = async () => {
     if (capturedImg) {
       let downloadUrl = await uploadImage(capturedImg);
       setUrl(downloadUrl);
+      navigate("/output");
     }
   };
 
   const handleMoving = (value) => {
     switch (value) {
-      case 'up':
+      case "up":
         setPosition((prev) => ({
           ...prev,
-          top: prev.top -0.5,
+          top: prev.top - 0.5,
         }));
         break;
 
-      case 'down':
+      case "down":
         setPosition((prev) => ({
           ...prev,
           top: prev.top + 0.5,
         }));
         break;
 
-      case 'left':
+      case "left":
         setPosition((prev) => ({
           ...prev,
           left: prev.left - 0.5,
         }));
         break;
 
-      case 'right':
+      case "right":
         setPosition((prev) => ({
           ...prev,
           left: prev.left + 0.5,
@@ -89,17 +82,18 @@ export default function CameraPage({ setUrl }) {
     }
   };
 
-  const handleResizing = (value) =>{
-
-    if(value=='inc'){
-      console.log('increasing')
-      setSize(prev=>prev + 0.5);
-    }else if(value=='dec'){
-      console.log('decre')
-      setSize(prev=>prev - 0.5)
+  // resizing
+  const handleResizing = (value) => {
+    if (value == "inc") {
+      console.log("increasing");
+      setSize((prev) => prev + 0.5);
+    } else if (value == "dec") {
+      console.log("decre");
+      setSize((prev) => prev - 0.5);
     }
-  }
-  
+  };
+
+  // countdown and screenshot logic
   useEffect(() => {
     let countdownInterval;
 
@@ -109,44 +103,40 @@ export default function CameraPage({ setUrl }) {
       }, 1000);
     } else if (isCounting && counting === 0) {
       // Capture the screenshot when countdown hits 0
-      setIsCaptured(true)
-    getScreenshot(screenshotRef.current, (base64Data) => {
-      console.log(base64Data);
-      setCapturedImg(base64Data);
-    });
-      // if (webRef.current.getScreenshot()) {
-      //   setIsCaptured(true);
-      //   setImg(webRef.current.getScreenshot());
-      // }
+      setIsCaptured(true);
+      getScreenshot(screenshotRef.current, (base64Data) => {
+        console.log(base64Data);
+        setCapturedImg(base64Data);
+      });
       setIsCounting(false); // Stop counting
     }
 
     return () => clearInterval(countdownInterval); // Cleanup interval on unmount or re-run
   }, [isCounting, counting]);
 
+  // keyboard events
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "ArrowUp") {
-        handleMoving('up');
+        handleMoving("up");
         console.log("up arrow");
       } else if (e.key === "ArrowDown") {
         console.log("down arrow");
-        handleMoving('down');
+        handleMoving("down");
       } else if (e.key === "ArrowLeft") {
         console.log("left arrow");
-        handleMoving('left');
+        handleMoving("left");
       } else if (e.key === "ArrowRight") {
         console.log("right arrow");
-        handleMoving('right');
-      }else if(e.key=='+'){
-        console.log("plus button");  
-        handleResizing('inc')
-      }else if(e.key=='-'){
-        handleResizing('dec')
+        handleMoving("right");
+      } else if (e.key == "+") {
+        console.log("plus button");
+        handleResizing("inc");
+      } else if (e.key == "-") {
+        handleResizing("dec");
         console.log("minus button");
       }
     };
-
 
     window.addEventListener("keydown", handleKeyDown);
 
@@ -154,8 +144,6 @@ export default function CameraPage({ setUrl }) {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
-
- 
 
   return (
     <div className="CameraPage flex-col-center">
@@ -184,33 +172,31 @@ export default function CameraPage({ setUrl }) {
                 className="webcamWithModel flex-row-center"
               >
                 {/* webcam */}
-                <Webcam
-                  id="webcam"
-                  forceScreenshotSourceSize={true}
-                
-                />
+                <Webcam id="webcam" forceScreenshotSourceSize={true} />
 
-                {!isCaptured && isCounting && (<h1 className="countdown">
-                  {counting}
-                  </h1>)}
+                {!isCaptured && isCounting && (
+                  <h1 className="countdown">{counting}</h1>
+                )}
 
                 {/* 3d model */}
                 {/* <Model3d /> */}
-                <div className="modelContainer flex-row-center" style={{
-                  left:`${postion.left}vh`,
-                  top:`${postion.top}vh`,
-                  width:`${size}vh`,
-
-                }}>
+                <div
+                  className="modelContainer flex-row-center"
+                  style={{
+                    left: `${postion.left}vh`,
+                    top: `${postion.top}vh`,
+                    width: `${size}vh`,
+                  }}
+                >
                   <img src={"/model.png"} alt="model" />
                 </div>
               </div>
             )}
 
             {/* frame */}
-            <div className="frameContainer flex-row-center">
+            {/*     <div className="frameContainer flex-row-center">
               <img src={frame} alt="frame" />
-            </div>
+            </div> */}
           </div>
         </div>
 
