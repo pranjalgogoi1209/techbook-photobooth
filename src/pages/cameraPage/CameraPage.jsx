@@ -37,8 +37,16 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
   const [size, setSize] = useState(16);
   const [isOpenEditor, setIsOpenEditor] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  // const [webcamWithModel, setWebcamWithModel] = useState("");
 
   console.log(postion);
+  /*   useEffect(() => {
+    if (screenshotRef?.current) {
+      setWebcamWithModel(screenshotRef.current);
+    }
+  }, []);
+
+  console.log(webcamWithModel); */
 
   // Start tracking drag status
   const handleStart = () => {
@@ -136,8 +144,13 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
       }, 1000);
     } else if (isCounting && counting === 0) {
       // Capture the screenshot when countdown hits 0
+
       setIsCounting(false); // Stop counting
       setIsCaptured(true);
+
+      /*     setTimeout(() => {
+        console.log("working");
+      }, [100]); */
 
       getScreenshot(screenshotRef.current, (base64Data) => {
         console.log(base64Data);
