@@ -17,6 +17,15 @@
     }
     .startBtnContainer {
       width: 22vh;
+      cursor: pointer;
     }
+  }
+}
+
+@media all and (min-width: 1100px) {
+  .mainContainer {
+    // border: 1px solid black;
+    height: 80% !important;
+    top: 17% !important;
   }
 }

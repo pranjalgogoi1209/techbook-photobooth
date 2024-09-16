@@ -108,6 +108,7 @@ $color-one: #212121;
     .retakeBtnContainer,
     .submitBtnContainer {
       width: 22vh;
+      cursor: pointer;
     }
 
     .retakeSubmitBtnContainer {
@@ -138,5 +139,31 @@ $color-one: #212121;
   100% {
     background-color: #fff2;
     box-shadow: 4vh 0 #fff, -4vh 0 #fff2;
+  }
+}
+
+@media all and (min-width: 1100px) {
+  .mainContainer {
+    // border: 1px solid black;
+    height: 80% !important;
+    top: 17% !important;
+    .wrapper {
+      gap: 5vh !important;
+    }
+    .editorContainer {
+      top: -8.5% !important;
+      svg {
+        font-size: 3vh !important;
+      }
+    }
+
+    .cameraContainer {
+      width: 35vh !important;
+      height: 45vh !important;
+      border-radius: 1vw !important;
+    }
+    .countdown {
+      font-size: 3vw !important;
+    }
   }
 }

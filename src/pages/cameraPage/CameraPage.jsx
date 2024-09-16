@@ -23,8 +23,13 @@ import submitBtn from "./../../assets/cameraPage/submitBtn.png";
 import frame from "./../../assets/cameraPage/frame.png";
 import cameraPageBg from "./../../assets/cameraPage/cameraPageBg.png";
 import logo from "./../../assets/logo.png";
+import cameraPageLaptopBg from "./../../assets/cameraPage/cameraPageLaptopBg.png";
 
-export default function CameraPage({ capturedImg, setCapturedImg }) {
+export default function CameraPage({
+  capturedImg,
+  setCapturedImg,
+  isHorizontalScreen,
+}) {
   const screenshotRef = useRef();
   const navigate = useNavigate();
   const [isCaptured, setIsCaptured] = useState(false);
@@ -38,6 +43,32 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
   const [isOpenEditor, setIsOpenEditor] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   // const [webcamWithModel, setWebcamWithModel] = useState("");
+  const [dx, setDx] = useState(0);
+  const [dy, setDy] = useState(0);
+
+  // will work on this code
+  let x;
+  let y;
+  useEffect(() => {
+    const modelElement = screenshotRef.current.querySelector(".modelContainer");
+    console.log("working");
+
+    if (modelElement) {
+      let currentTransform = modelElement.style.transform;
+      let translateValues = currentTransform.match(
+        /translate\(([^,]+),\s*([^)]+)\)/
+      );
+      if (translateValues) {
+        x = parseFloat(translateValues[1]);
+        y = parseFloat(translateValues[2]);
+
+        setDx(x);
+        setDy(y);
+      }
+    }
+  }, [x, y]);
+
+  console.log(dx, dy);
 
   console.log(postion);
   /*   useEffect(() => {
@@ -196,7 +227,10 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
     <div className="CameraPage flex-col-center">
       {/* bg */}
       <div className="cameraPageBgContainer flex-row-center">
-        <img src={cameraPageBg} alt="cameraPageBg" />
+        <img
+          src={isHorizontalScreen ? cameraPageLaptopBg : cameraPageBg}
+          alt="cameraPageBg"
+        />
       </div>
 
       {/* main container */}
@@ -296,7 +330,7 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
                   )}
 
                   {/* model */}
-                  <Draggable defaultPosition={{ x: 0, y: 0 }}>
+                  <Draggable defaultPosition={{ x: dx, y: dy }}>
                     <div
                       className="modelContainer flex-row-center"
                       style={{

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/homePage/HomePage";
 import CameraPage from "./pages/cameraPage/CameraPage";
@@ -10,6 +10,17 @@ import { db } from "./firebase";
 function App() {
   const [url, setUrl] = useState();
   const [capturedImg, setCapturedImg] = useState("");
+  const [isHorizontalScreen, setIsHorizontalScreen] = useState(false);
+
+  useEffect(() => {
+    if (window.innerWidth >= 1100) {
+      setIsHorizontalScreen(true);
+    } else {
+      setIsHorizontalScreen(false);
+    }
+  }, [isHorizontalScreen]);
+
+  console.log(isHorizontalScreen);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -36,7 +47,13 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={<HomePage setUrl={setUrl} setCapturedImg={setCapturedImg} />}
+          element={
+            <HomePage
+              setUrl={setUrl}
+              setCapturedImg={setCapturedImg}
+              isHorizontalScreen={isHorizontalScreen}
+            />
+          }
         />
         <Route
           path="/camera"
@@ -44,13 +61,19 @@ function App() {
             <CameraPage
               capturedImg={capturedImg}
               setCapturedImg={setCapturedImg}
+              isHorizontalScreen={isHorizontalScreen}
             />
           }
         />
         <Route
           path="/output"
           element={
-            <OutputPage url={url} setUrl={setUrl} capturedImg={capturedImg} />
+            <OutputPage
+              url={url}
+              setUrl={setUrl}
+              capturedImg={capturedImg}
+              isHorizontalScreen={isHorizontalScreen}
+            />
           }
         />
       </Routes>

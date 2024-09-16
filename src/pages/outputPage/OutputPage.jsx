@@ -8,8 +8,9 @@ import outputPageBg from "./../../assets/cameraPage/cameraPageBg.png";
 import logo from "./../../assets/logo.png";
 import homeBtn from "./../../assets/homePage/homeBtn.png";
 import qrFrame from "./../../assets/outputPage/qrFrame.png";
+import cameraPageLaptopBg from "./../../assets/cameraPage/cameraPageLaptopBg.png";
 
-function OutputPage({ url, setUrl, capturedImg }) {
+function OutputPage({ url, setUrl, capturedImg, isHorizontalScreen }) {
   // Customize the colors
   const qrColor = "#000000"; // Foreground color (QR code)
   const qrBgColor = "#ffffff"; // Background color
@@ -28,7 +29,10 @@ function OutputPage({ url, setUrl, capturedImg }) {
     <div className="OutputPage flex-col-center">
       {/* bg */}
       <div className="outputBgContainer">
-        <img src={outputPageBg} alt="bg" />
+        <img
+          src={isHorizontalScreen ? cameraPageLaptopBg : outputPageBg}
+          alt="bg"
+        />
       </div>
 
       {/* qr code container */}

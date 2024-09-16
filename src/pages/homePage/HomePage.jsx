@@ -5,17 +5,23 @@ import { Link } from "react-router-dom";
 import homeBg from "./../../assets/homePage/homeBg.png";
 import logo from "./../../assets/logo.png";
 import startBtn from "./../../assets/homePage/startBtn.png";
+import homeLaptopBg from "./../../assets/homePage/homeLaptopBg.png";
 
-export default function HomePage({ setUrl, setCapturedImg }) {
+export default function HomePage({
+  setUrl,
+  setCapturedImg,
+  isHorizontalScreen,
+}) {
   useEffect(() => {
     setUrl("");
     setCapturedImg("");
   }, []);
+
   return (
     <div className="HomePage flex-col-center">
       {/* bg */}
       <div className="homeBgContainer flex-row-center">
-        <img src={homeBg} alt="homeBg" />
+        <img src={isHorizontalScreen ? homeLaptopBg : homeBg} alt="homeBg" />
       </div>
 
       {/* main container */}
