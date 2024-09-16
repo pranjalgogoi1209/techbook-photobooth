@@ -1,42 +1,28 @@
 import html2canvas from "html2canvas";
 
-const getScreenshot = (element, callback) => {
+const getScreenshot = ({ element, type }, callback) => {
   if (!element) return;
 
-  // flip the model
-  const modelElement = element.querySelector(".modelContainer");
+  // If the type is "withFrame", apply transformations
+  if (type === "withFrame") {
+    const modelElement = element.querySelector(".modelContainer");
 
-  /*   if (modelElement) {
-    // videoElement.classList.add("my-camera-custom-class");
-    modelElement.style.right = modelElement.style.left;
-    console.log(modelElement.style.right);
-    modelElement.style.left = "";
-  } */
+    if (modelElement) {
+      let currentTransform = modelElement.style.transform;
+      let translateValues = currentTransform.match(
+        /translate\(([^,]+),\s*([^)]+)\)/
+      );
 
-  if (modelElement) {
-    // Get the current transform value
-    let currentTransform = modelElement.style.transform;
-
-    // Extract the x and y values from the translate function
-    let translateValues = currentTransform.match(
-      /translate\(([^,]+),\s*([^)]+)\)/
-    );
-
-    if (translateValues) {
-      // Convert x and y values to numbers
-      let x = parseFloat(translateValues[1]);
-      let y = parseFloat(translateValues[2]);
-
-      x = -x;
-
-      // Set the new transform value back to the element
-      modelElement.style.transform = `translate(${x}px, ${y}px)`;
+      if (translateValues) {
+        let x = parseFloat(translateValues[1]);
+        let y = parseFloat(translateValues[2]);
+        x = -x;
+        modelElement.style.transform = `translate(${x}px, ${y}px)`;
+      }
     }
   }
 
-  // flip the image
-  // element.style.transform = "scaleX(-1)";
-
+  // Capture the screenshot using html2canvas
   html2canvas(element, {
     useCORS: true,
     scale: 5,

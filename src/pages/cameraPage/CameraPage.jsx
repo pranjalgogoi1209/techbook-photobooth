@@ -24,13 +24,16 @@ import frame from "./../../assets/cameraPage/frame.png";
 import cameraPageBg from "./../../assets/cameraPage/cameraPageBg.png";
 import logo from "./../../assets/logo.png";
 import cameraPageLaptopBg from "./../../assets/cameraPage/cameraPageLaptopBg.png";
+import { element } from "three/webgpu";
 
 export default function CameraPage({
   capturedImg,
   setCapturedImg,
+  setCapturedImgWithFrame,
   isHorizontalScreen,
 }) {
   const screenshotRef = useRef();
+  const screenshotWithFrameRef = useRef();
   const navigate = useNavigate();
   const [isCaptured, setIsCaptured] = useState(false);
   const [postion, setPosition] = useState({
@@ -165,8 +168,6 @@ export default function CameraPage({
 
   // countdown and screenshot logic
   useEffect(() => {
-    // console.log("counting", isCounting, counting);
-
     let countdownInterval;
 
     if (isCounting && counting > 0) {
@@ -174,19 +175,27 @@ export default function CameraPage({
         setCounting((prevCountdown) => prevCountdown - 1);
       }, 1000);
     } else if (isCounting && counting === 0) {
-      // Capture the screenshot when countdown hits 0
-
       setIsCounting(false); // Stop counting
-      setIsCaptured(true);
 
-      /*     setTimeout(() => {
-        console.log("working");
-      }, [100]); */
+      // Capture the screenshot with the frame first
+      getScreenshot(
+        { element: screenshotWithFrameRef.current, type: "withFrame" },
+        (base64Data) => {
+          console.log("Screenshot with frame:", base64Data);
+          setCapturedImgWithFrame(base64Data);
+        }
+      );
 
-      getScreenshot(screenshotRef.current, (base64Data) => {
-        console.log(base64Data);
-        setCapturedImg(base64Data);
-      });
+      setIsCaptured(true); // Update isCaptured
+
+      // Capture the screenshot without the frame afterward
+      getScreenshot(
+        { element: screenshotRef.current, type: "withoutFrame" }, // Pass screenshotRef here
+        (base64Data) => {
+          console.log("Screenshot without frame:", base64Data);
+          setCapturedImg(base64Data);
+        }
+      );
     }
 
     return () => clearInterval(countdownInterval); // Cleanup interval on unmount or re-run
@@ -304,7 +313,10 @@ export default function CameraPage({
             )}
 
             {/* camera container */}
-            <div className="cameraContainer flex-row-center">
+            <div
+              ref={screenshotWithFrameRef}
+              className="cameraContainer flex-row-center"
+            >
               {isCaptured ? (
                 <div className="capturedImgContainer flex-row-center">
                   {capturedImg ? (

@@ -10,6 +10,7 @@ import { db } from "./firebase";
 function App() {
   const [url, setUrl] = useState();
   const [capturedImg, setCapturedImg] = useState("");
+  const [capturedImgWithFrame, setCapturedImgWithFrame] = useState(null);
   const [isHorizontalScreen, setIsHorizontalScreen] = useState(false);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ function App() {
               setUrl={setUrl}
               setCapturedImg={setCapturedImg}
               isHorizontalScreen={isHorizontalScreen}
+              setCapturedImgWithFrame={setCapturedImgWithFrame}
             />
           }
         />
@@ -60,8 +62,9 @@ function App() {
           element={
             <CameraPage
               capturedImg={capturedImg}
-              setCapturedImg={setCapturedImg}
               isHorizontalScreen={isHorizontalScreen}
+              setCapturedImg={setCapturedImg}
+              setCapturedImgWithFrame={setCapturedImgWithFrame}
             />
           }
         />
@@ -71,7 +74,7 @@ function App() {
             <OutputPage
               url={url}
               setUrl={setUrl}
-              capturedImg={capturedImg}
+              capturedImgWithFrame={capturedImgWithFrame}
               isHorizontalScreen={isHorizontalScreen}
             />
           }

@@ -10,11 +10,13 @@ import homeLaptopBg from "./../../assets/homePage/homeLaptopBg.png";
 export default function HomePage({
   setUrl,
   setCapturedImg,
+  setCapturedImgWithFrame,
   isHorizontalScreen,
 }) {
   useEffect(() => {
     setUrl("");
     setCapturedImg("");
+    setCapturedImgWithFrame("");
   }, []);
 
   return (
