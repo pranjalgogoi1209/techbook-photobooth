@@ -36,12 +36,12 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
   const [counting, setCounting] = useState(5);
   const [size, setSize] = useState(16);
   const [isOpenEditor, setIsOpenEditor] = useState(false);
-  const [isDragging,setIsDragging]=useState(false)
+  const [isDragging, setIsDragging] = useState(false);
 
   console.log(postion);
 
-   // Start tracking drag status
-   const handleStart = () => {
+  // Start tracking drag status
+  const handleStart = () => {
     setIsDragging(false);
   };
 
@@ -58,7 +58,7 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
   // handle editor
   const handleEditor = () => {
     setIsOpenEditor(true);
-    console.log('handle editor opening')
+    console.log("handle editor opening");
   };
 
   const captureImg = () => {
@@ -190,7 +190,7 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
       <div className="mainContainer flex-col-center">
         <div className="wrapper flex-col-center">
           {/* logo */}
-          <div className="logoContainer flex-row-center">
+          <div onClick={handleEditor} className="logoContainer flex-row-center">
             <img src={logo} alt="logo" />
           </div>
 
@@ -199,36 +199,36 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
             {isOpenEditor && (
               <div className="editorContainer flex-row-center">
                 {/* Move Left */}
-                <div
+                {/*  <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("left")}
                 >
                   <MdArrowLeft />
-                </div>
+                </div> */}
 
                 {/* Move Right */}
-                <div
+                {/*  <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("right")}
                 >
                   <MdArrowRight />
-                </div>
+                </div> */}
 
                 {/* Move Up */}
-                <div
+                {/*   <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("up")}
                 >
                   <MdOutlineArrowDropUp />
-                </div>
+                </div> */}
 
                 {/* Move Down */}
-                <div
+                {/*   <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("down")}
                 >
                   <MdOutlineArrowDropDown />
-                </div>
+                </div> */}
 
                 {/* Increase Size */}
                 <div
@@ -283,20 +283,16 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
                   )}
 
                   {/* model */}
-                  <Draggable>
-                  <div
-                    onClick={handleEditor}
-                    className="modelContainer flex-row-center"
-                    style={{
-                      left: `${postion.left}vh`,
-                      top: `${postion.top}vh`,
-                      width: `${size}vh`,
-                    }}
+                  <Draggable defaultPosition={{ x: 0, y: 0 }}>
+                    <div
+                      className="modelContainer flex-row-center"
+                      style={{
+                        width: `${size}vh`,
+                      }}
                     >
-                    <img src={"/model.png"} alt="model" />
-                  </div>
+                      <img src={"/model.png"} alt="model" />
+                    </div>
                   </Draggable>
-
                 </div>
               )}
 

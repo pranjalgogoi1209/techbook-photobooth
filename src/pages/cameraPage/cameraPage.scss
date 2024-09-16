@@ -32,8 +32,8 @@ $color-one: #212121;
         .editorContainer {
           position: absolute;
           top: -10.5%;
+          right: 0;
           border: 0.1vw solid #212121;
-          width: 100%;
           background-color: #212121;
           gap: 0.5vw;
           svg {
@@ -70,6 +70,7 @@ $color-one: #212121;
               position: absolute;
               height: auto;
               // background-color: red;
+              transform: translate(-147.5px, 62.5px);
             }
             .countdown {
               position: absolute;
