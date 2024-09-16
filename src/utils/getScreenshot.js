@@ -39,7 +39,7 @@ const getScreenshot = (element, callback) => {
 
   html2canvas(element, {
     useCORS: true,
-    scale: window.devicePixelRatio || 2,
+    scale: 5,
   }).then((canvas) => {
     const base64Image = canvas.toDataURL("image/png");
     callback(base64Image);
