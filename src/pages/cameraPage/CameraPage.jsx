@@ -2,8 +2,18 @@ import React, { useState, useRef, useEffect } from "react";
 import "./cameraPage.scss";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
+import {
+  MdArrowLeft,
+  MdArrowRight,
+  MdOutlineArrowDropUp,
+  MdOutlineArrowDropDown,
+  MdOutlineDone,
+} from "react-icons/md";
+import { GoPlus } from "react-icons/go";
+import { AiOutlineMinus } from "react-icons/ai";
+import { IoCheckmarkDoneSharp } from "react-icons/io5";
 
-import Model3d from "../../components/model3d/Model3d";
+// import Model3d from "../../components/model3d/Model3d";
 import getScreenshot from "../../utils/getScreenshot";
 
 import captureBtn from "./../../assets/cameraPage/captureBtn.png";
@@ -24,8 +34,14 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
   const [isCounting, setIsCounting] = useState(false);
   const [counting, setCounting] = useState(5);
   const [size, setSize] = useState(20);
+  const [isOpenEditor, setIsOpenEditor] = useState(false);
 
   console.log(postion);
+
+  // handle editor
+  const handleEditor = () => {
+    setIsOpenEditor(true);
+  };
 
   const captureImg = () => {
     setIsCounting(true);
@@ -145,66 +161,6 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
     };
   }, []);
 
-  // touch events
-  useEffect(() => {
-    // Function to handle touch movement
-    const handleTouchMove = (e) => {
-      if (e.touches.length === 1) {
-        // Single touch for moving
-        const touch = e.touches[0];
-        const movementX = touch.clientX - touch.startX;
-        const movementY = touch.clientY - touch.startY;
-
-        if (movementY < -10) {
-          handleMoving("up");
-        } else if (movementY > 10) {
-          handleMoving("down");
-        }
-
-        if (movementX < -10) {
-          handleMoving("left");
-        } else if (movementX > 10) {
-          handleMoving("right");
-        }
-      }
-
-      // Two fingers touch for resizing
-      if (e.touches.length === 2) {
-        const touch1 = e.touches[0];
-        const touch2 = e.touches[1];
-
-        const distance = Math.hypot(
-          touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY
-        );
-
-        if (e.prevDistance) {
-          if (distance > e.prevDistance + 10) {
-            handleResizing("inc");
-          } else if (distance < e.prevDistance - 10) {
-            handleResizing("dec");
-          }
-        }
-        e.prevDistance = distance;
-      }
-    };
-
-    // Reset after touch ends
-    const handleTouchEnd = () => {
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-    };
-
-    // Add touch listeners
-    window.addEventListener("touchmove", handleTouchMove);
-    window.addEventListener("touchend", handleTouchEnd);
-
-    return () => {
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, []);
-
   return (
     <div className="CameraPage flex-col-center">
       {/* bg */}
@@ -220,51 +176,114 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
             <img src={logo} alt="logo" />
           </div>
 
-          {/* camera container */}
-          <div className="cameraContainer flex-row-center">
-            {isCaptured ? (
-              <div className="capturedImgContainer flex-row-center">
-                {capturedImg ? (
-                  <img src={capturedImg} alt="capturedImg" />
-                ) : (
-                  <span className="loader2"></span>
-                )}
-              </div>
-            ) : (
-              <div
-                ref={screenshotRef}
-                className="webcamWithModel flex-row-center"
-              >
-                {/* webcam */}
-                <Webcam
-                  id="webcam"
-                  forceScreenshotSourceSize={true}
-                  mirrored={true}
-                />
-
-                {!isCaptured && isCounting && (
-                  <h1 className="countdown">{counting}</h1>
-                )}
-
-                {/* 3d model */}
-                {/* <Model3d /> */}
+          <div className="cameraContainerWrapper flex-col-center">
+            {/* editor */}
+            {isOpenEditor && (
+              <div className="editorContainer flex-row-center">
+                {/* Move Left */}
                 <div
-                  className="modelContainer flex-row-center"
-                  style={{
-                    left: `${postion.left}vh`,
-                    top: `${postion.top}vh`,
-                    width: `${size}vh`,
-                  }}
+                  className="moveBtn flex-row-center"
+                  onClick={() => handleMoving("left")}
                 >
-                  <img src={"/model.png"} alt="model" />
+                  <MdArrowLeft />
+                </div>
+
+                {/* Move Right */}
+                <div
+                  className="moveBtn flex-row-center"
+                  onClick={() => handleMoving("right")}
+                >
+                  <MdArrowRight />
+                </div>
+
+                {/* Move Up */}
+                <div
+                  className="moveBtn flex-row-center"
+                  onClick={() => handleMoving("up")}
+                >
+                  <MdOutlineArrowDropUp />
+                </div>
+
+                {/* Move Down */}
+                <div
+                  className="moveBtn flex-row-center"
+                  onClick={() => handleMoving("down")}
+                >
+                  <MdOutlineArrowDropDown />
+                </div>
+
+                {/* Increase Size */}
+                <div
+                  className="resizeBtn flex-row-center"
+                  onClick={() => handleResizing("inc")}
+                >
+                  <GoPlus />
+                </div>
+
+                {/* Decrease Size */}
+                <div
+                  className="resizeBtn flex-row-center"
+                  onClick={() => handleResizing("dec")}
+                >
+                  <AiOutlineMinus />
+                </div>
+
+                {/* Close Editor */}
+                <div
+                  onClick={() => setIsOpenEditor(false)}
+                  className="flex-row-center closeEditorBtn"
+                >
+                  <MdOutlineDone />
                 </div>
               </div>
             )}
 
-            {/* frame */}
-            {/*     <div className="frameContainer flex-row-center">
+            {/* camera container */}
+            <div className="cameraContainer flex-row-center">
+              {isCaptured ? (
+                <div className="capturedImgContainer flex-row-center">
+                  {capturedImg ? (
+                    <img src={capturedImg} alt="capturedImg" />
+                  ) : (
+                    <span className="loader2"></span>
+                  )}
+                </div>
+              ) : (
+                <div
+                  ref={screenshotRef}
+                  className="webcamWithModel flex-row-center"
+                >
+                  {/* webcam */}
+                  <Webcam
+                    id="webcam"
+                    forceScreenshotSourceSize={true}
+                    mirrored={true}
+                  />
+
+                  {!isCaptured && isCounting && (
+                    <h1 className="countdown">{counting}</h1>
+                  )}
+
+                  {/* model */}
+                  <div
+                    onClick={handleEditor}
+                    className="modelContainer flex-row-center"
+                    style={{
+                      left: `${postion.left}vh`,
+                      top: `${postion.top}vh`,
+                      width: `${size}vh`,
+                    }}
+                  >
+                    <img src={"/model.png"} alt="model" />
+                  </div>
+                </div>
+              )}
+
+              {/* frame */}
+              {/*     <div className="frameContainer flex-row-center">
               <img src={frame} alt="frame" />
             </div> */}
+            </div>
           </div>
         </div>
 

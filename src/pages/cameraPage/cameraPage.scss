@@ -21,56 +21,79 @@ $color-one: #212121;
 
     .wrapper {
       // border: 1px solid black;
-      overflow: hidden;
       gap: 6.2vh;
       .logoContainer {
         width: 35vh;
       }
-      .cameraContainer {
+
+      .cameraContainerWrapper {
+        // gap: 2vh;
         position: relative;
-        width: 30vh;
-        height: 40vh;
-        /*  outline: 2.5vw solid $color-one;
-        outline-offset: -2.5vw; */
-        border: 2.5vw solid $color-one;
-        border-radius: 2vw;
-        overflow: hidden;
-        .webcamWithModel {
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          #webcam {
-            width: auto;
-            height: 100%;
-            object-fit: cover;
-          }
-          .modelContainer {
-            // border: 1px solid green;
-            position: absolute;
-            height: auto;
-          }
-          .countdown {
-            position: absolute;
-            top: 37%;
-            left: 45%;
-            color: $color-one;
-            font-size: 8.5vw;
-            font-weight: 600;
-            z-index: 2;
-          }
-        }
-        .frameContainer,
-        .capturedImgContainer {
+        .editorContainer {
           position: absolute;
-          inset: 0;
-          width: 100.2%;
-          height: 100%;
+          top: -10.5%;
+          border: 0.1vw solid #212121;
+          width: 100%;
+          background-color: #212121;
+          gap: 0.5vw;
+          svg {
+            font-size: 4vh;
+            border: 0.1vw solid #f1f1f1;
+            color: #fff;
+          }
+          .closeEditorBtn {
+            svg {
+              color: greenyellow;
+            }
+          }
         }
-        .capturedImgContainer {
-          background-color: $color-one;
-          /*          outline: 2.5vw solid $color-one;
+        .cameraContainer {
+          position: relative;
+          width: 30vh;
+          height: 40vh;
+          /*  outline: 2.5vw solid $color-one;
           outline-offset: -2.5vw; */
-          transform: scaleX(-1);
+          border: 2.5vw solid $color-one;
+          border-radius: 2vw;
+          overflow: hidden;
+          .webcamWithModel {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            #webcam {
+              width: auto;
+              height: 100%;
+              object-fit: cover;
+            }
+            .modelContainer {
+              // border: 5px solid red;
+              position: absolute;
+              height: auto;
+              // background-color: red;
+            }
+            .countdown {
+              position: absolute;
+              top: 37%;
+              left: 45%;
+              color: $color-one;
+              font-size: 8.5vw;
+              font-weight: 600;
+              z-index: 2;
+            }
+          }
+          .frameContainer,
+          .capturedImgContainer {
+            position: absolute;
+            inset: 0;
+            width: 100.2%;
+            height: 100%;
+          }
+          .capturedImgContainer {
+            background-color: $color-one;
+            /*          outline: 2.5vw solid $color-one;
+            outline-offset: -2.5vw; */
+            transform: scaleX(-1);
+          }
         }
       }
     }
