@@ -15,8 +15,9 @@ const getScreenshot = (element, callback) => {
   // flip the image
   // element.style.transform = "scaleX(-1)";
 
-  html2canvas(element, { useCORS: true, scale: window.devicePixelRatio }).then(
+  html2canvas(element, { useCORS: true, scale: window.devicePixelRatio || 2 }).then(
     (canvas) => {
+      console.log(window.devicePixelRatio)
       const base64Image = canvas.toDataURL("image/png");
       callback(base64Image);
     }
