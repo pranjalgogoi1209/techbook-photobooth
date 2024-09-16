@@ -145,6 +145,66 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
     };
   }, []);
 
+  // touch events
+  useEffect(() => {
+    // Function to handle touch movement
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 1) {
+        // Single touch for moving
+        const touch = e.touches[0];
+        const movementX = touch.clientX - touch.startX;
+        const movementY = touch.clientY - touch.startY;
+
+        if (movementY < -10) {
+          handleMoving("up");
+        } else if (movementY > 10) {
+          handleMoving("down");
+        }
+
+        if (movementX < -10) {
+          handleMoving("left");
+        } else if (movementX > 10) {
+          handleMoving("right");
+        }
+      }
+
+      // Two fingers touch for resizing
+      if (e.touches.length === 2) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+
+        const distance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
+
+        if (e.prevDistance) {
+          if (distance > e.prevDistance + 10) {
+            handleResizing("inc");
+          } else if (distance < e.prevDistance - 10) {
+            handleResizing("dec");
+          }
+        }
+        e.prevDistance = distance;
+      }
+    };
+
+    // Reset after touch ends
+    const handleTouchEnd = () => {
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+
+    // Add touch listeners
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
+
   return (
     <div className="CameraPage flex-col-center">
       {/* bg */}
