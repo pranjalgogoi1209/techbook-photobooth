@@ -53,7 +53,7 @@ $color-one: #212121;
           height: 40vh;
           /*  outline: 2.5vw solid $color-one;
           outline-offset: -2.5vw; */
-          border: 2.5vw solid $color-one;
+          // border: 2.5vw solid $color-one;
           border-radius: 2vw;
           overflow: hidden;
           .webcamWithModel {
@@ -87,6 +87,9 @@ $color-one: #212121;
             inset: 0;
             width: 100.2%;
             height: 100%;
+          }
+          .frameContainer {
+            pointer-events: none;
           }
           .capturedImgContainer {
             background-color: $color-one;

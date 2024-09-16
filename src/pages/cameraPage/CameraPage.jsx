@@ -29,12 +29,12 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
   const navigate = useNavigate();
   const [isCaptured, setIsCaptured] = useState(false);
   const [postion, setPosition] = useState({
-    top: 1,
-    left: -1.5,
+    top: 8,
+    left: 0,
   });
   const [isCounting, setIsCounting] = useState(false);
   const [counting, setCounting] = useState(5);
-  const [size, setSize] = useState(20);
+  const [size, setSize] = useState(16);
   const [isOpenEditor, setIsOpenEditor] = useState(false);
   const [isDragging,setIsDragging]=useState(false)
 
@@ -136,13 +136,13 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
       }, 1000);
     } else if (isCounting && counting === 0) {
       // Capture the screenshot when countdown hits 0
+      setIsCounting(false); // Stop counting
       setIsCaptured(true);
 
       getScreenshot(screenshotRef.current, (base64Data) => {
         console.log(base64Data);
         setCapturedImg(base64Data);
       });
-      setIsCounting(false); // Stop counting
     }
 
     return () => clearInterval(countdownInterval); // Cleanup interval on unmount or re-run
@@ -301,9 +301,9 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
               )}
 
               {/* frame */}
-              {/*     <div className="frameContainer flex-row-center">
-              <img src={frame} alt="frame" />
-            </div> */}
+              <div className="frameContainer flex-row-center">
+                <img src={frame} alt="frame" />
+              </div>
             </div>
           </div>
         </div>

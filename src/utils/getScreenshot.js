@@ -15,10 +15,12 @@ const getScreenshot = (element, callback) => {
   // flip the image
   // element.style.transform = "scaleX(-1)";
 
-  html2canvas(element, { useCORS: true,scale:window.devicePixelRatio }).then((canvas) => {
-    const base64Image = canvas.toDataURL("image/png");
-    callback(base64Image);
-  });
+  html2canvas(element, { useCORS: true, scale: window.devicePixelRatio }).then(
+    (canvas) => {
+      const base64Image = canvas.toDataURL("image/png");
+      callback(base64Image);
+    }
+  );
 };
 
 export default getScreenshot;
