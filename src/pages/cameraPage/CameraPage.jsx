@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import Draggable from "react-draggable";
 import "./cameraPage.scss";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
@@ -35,12 +36,29 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
   const [counting, setCounting] = useState(5);
   const [size, setSize] = useState(20);
   const [isOpenEditor, setIsOpenEditor] = useState(false);
+  const [isDragging,setIsDragging]=useState(false)
 
   console.log(postion);
+
+   // Start tracking drag status
+   const handleStart = () => {
+    setIsDragging(false);
+  };
+
+  // If the element is being dragged, we set dragging to true
+  const handleDrag = () => {
+    setIsDragging(true);
+  };
+
+  // Handle the stop event
+  const handleStop = () => {
+    setTimeout(() => setIsDragging(false), 0); // Reset dragging status after a short delay
+  };
 
   // handle editor
   const handleEditor = () => {
     setIsOpenEditor(true);
+    console.log('handle editor opening')
   };
 
   const captureImg = () => {
@@ -265,6 +283,7 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
                   )}
 
                   {/* model */}
+                  <Draggable>
                   <div
                     onClick={handleEditor}
                     className="modelContainer flex-row-center"
@@ -273,9 +292,11 @@ export default function CameraPage({ capturedImg, setCapturedImg }) {
                       top: `${postion.top}vh`,
                       width: `${size}vh`,
                     }}
-                  >
+                    >
                     <img src={"/model.png"} alt="model" />
                   </div>
+                  </Draggable>
+
                 </div>
               )}
 
