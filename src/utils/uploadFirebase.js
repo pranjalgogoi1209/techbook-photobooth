@@ -32,7 +32,7 @@ function getUID() {
       }
     );
     return downloadURL;
-      console.log('Image metadata saved to Firestore');
+    
     } catch (error) {
       console.error('Error uploading image or saving to Firestore:', error);
     } finally {
