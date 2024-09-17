@@ -1,6 +1,6 @@
 import html2canvas from "html2canvas";
 
-const getScreenshot = ({ element, type }, callback) => {
+const getScreenshot = ({ element, type, isHorizontalScreen }, callback) => {
   if (!element) return;
 
   // If the type is "withFrame", apply transformations
@@ -26,10 +26,10 @@ const getScreenshot = ({ element, type }, callback) => {
   if (type == "withFrame") {
     html2canvas(element, {
       useCORS: true,
-      scale: 1,
-      x: 0,
+      scale: 3,
+      x: isHorizontalScreen ? 600 : 0,
       y: 0,
-      width: element.offsetWidth,
+      width: isHorizontalScreen ? 650 : element.offsetWidth,
       height: element.offsetHeight - element.offsetHeight / 8,
     }).then((canvas) => {
       const base64Image = canvas.toDataURL("image/png");

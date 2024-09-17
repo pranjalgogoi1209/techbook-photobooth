@@ -179,7 +179,11 @@ export default function CameraPage({
 
       // Capture the screenshot with the frame first
       getScreenshot(
-        { element: screenshotWithFrameRef.current, type: "withFrame" },
+        {
+          element: screenshotWithFrameRef.current,
+          type: "withFrame",
+          isHorizontalScreen,
+        },
         (base64Data) => {
           console.log("Screenshot with frame:", base64Data);
           setCapturedImgWithFrame(base64Data);
