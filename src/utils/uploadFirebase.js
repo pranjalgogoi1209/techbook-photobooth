@@ -15,16 +15,10 @@ function getUID() {
 
   const dataURL = base64.split(",")[1];
     try {
-      // setLoading(true);
-      const storageRef = ref(storage, `techbook/techbook_ai_photobooth_image_${Date.now()}.png`);  // Create a reference in Firebase Storage
-      await uploadString(storageRef, dataURL, 'base64');  // Upload the image
-      //get download url
+      const storageRef = ref(storage, `techbook/techbook_images_${Date.now()}.png`);
+      await uploadString(storageRef, dataURL, 'base64');  
       const downloadURL = await getDownloadURL(storageRef);
-      //setDownloadUrl
-    //setDownloadUrl(downloadURL); 
-
-    // console.log(downloadURL);
-      const valueRef = collection(db,'Techbook_Photo_Booth_testing');
+      const valueRef = collection(db,'techbook_qr_urls');
       await addDoc(valueRef,
          {
         imageUrl: downloadURL,

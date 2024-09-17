@@ -28,7 +28,8 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, "Techbook_Photo_Booth_testing"),
+      collection(db, "techbook_qr_urls"),
+      // collection(db, "Techbook_Photo_Booth_testing"),
       (snapshot) => {
         try {
           let alldata = snapshot.docs.map((doc) => ({
