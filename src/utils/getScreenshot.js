@@ -26,7 +26,7 @@ const getScreenshot = ({ element, type }, callback) => {
   if (type == "withFrame") {
     html2canvas(element, {
       useCORS: true,
-      scale: 5,
+      scale: 2,
       x: 0,
       y: 0,
       width: element.offsetWidth,
