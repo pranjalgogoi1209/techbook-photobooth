@@ -31,6 +31,12 @@ export default function CameraPage({
   setCapturedImg,
   setCapturedImgWithFrame,
   isHorizontalScreen,
+  dx,
+  dy,
+  setDx,
+  setDy,
+  size,
+  setSize,
 }) {
   const screenshotRef = useRef();
   const screenshotWithFrameRef = useRef();
@@ -42,12 +48,9 @@ export default function CameraPage({
   });
   const [isCounting, setIsCounting] = useState(false);
   const [counting, setCounting] = useState(5);
-  const [size, setSize] = useState(16);
   const [isOpenEditor, setIsOpenEditor] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   // const [webcamWithModel, setWebcamWithModel] = useState("");
-  const [dx, setDx] = useState(0);
-  const [dy, setDy] = useState(0);
 
   // will work on this code
   useEffect(() => {

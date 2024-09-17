@@ -12,6 +12,9 @@ function App() {
   const [capturedImg, setCapturedImg] = useState("");
   const [capturedImgWithFrame, setCapturedImgWithFrame] = useState(null);
   const [isHorizontalScreen, setIsHorizontalScreen] = useState(false);
+  const [dx, setDx] = useState(0);
+  const [dy, setDy] = useState(0);
+  const [size, setSize] = useState(16);
 
   useEffect(() => {
     if (window.innerWidth >= 1100) {
@@ -65,6 +68,12 @@ function App() {
               isHorizontalScreen={isHorizontalScreen}
               setCapturedImg={setCapturedImg}
               setCapturedImgWithFrame={setCapturedImgWithFrame}
+              dx={dx}
+              dy={dy}
+              setDx={setDx}
+              setDy={setDy}
+              size={size}
+              setSize={setSize}
             />
           }
         />
