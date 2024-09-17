@@ -233,7 +233,7 @@ export default function CameraPage({
   }, []);
 
   return (
-    <div className="CameraPage flex-col-center">
+    <div ref={screenshotWithFrameRef} className="CameraPage flex-col-center">
       {/* bg */}
       <div className="cameraPageBgContainer flex-row-center">
         <img
@@ -313,10 +313,7 @@ export default function CameraPage({
             )}
 
             {/* camera container */}
-            <div
-              ref={screenshotWithFrameRef}
-              className="cameraContainer flex-row-center"
-            >
+            <div className="cameraContainer flex-row-center">
               {isCaptured ? (
                 <div className="capturedImgContainer flex-row-center">
                   {capturedImg ? (
