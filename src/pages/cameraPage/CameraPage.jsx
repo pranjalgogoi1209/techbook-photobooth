@@ -50,11 +50,9 @@ export default function CameraPage({
   const [dy, setDy] = useState(0);
 
   // will work on this code
-  let x;
-  let y;
   useEffect(() => {
     const modelElement = screenshotRef.current.querySelector(".modelContainer");
-    console.log("working");
+    console.log("working", dx, dy);
 
     if (modelElement) {
       let currentTransform = modelElement.style.transform;
@@ -62,16 +60,11 @@ export default function CameraPage({
         /translate\(([^,]+),\s*([^)]+)\)/
       );
       if (translateValues) {
-        x = parseFloat(translateValues[1]);
-        y = parseFloat(translateValues[2]);
-
-        setDx(x);
-        setDy(y);
+        setDx(parseFloat(translateValues[1]));
+        setDy(parseFloat(translateValues[2]));
       }
     }
-  }, [x, y]);
-
-  console.log(dx, dy);
+  }, [isDragging]);
 
   console.log(postion);
   /*   useEffect(() => {
@@ -94,7 +87,7 @@ export default function CameraPage({
 
   // Handle the stop event
   const handleStop = () => {
-    setTimeout(() => setIsDragging(false), 0); // Reset dragging status after a short delay
+    setIsDragging(false);
   };
 
   // handle editor
@@ -343,7 +336,11 @@ export default function CameraPage({
                   )}
 
                   {/* model */}
-                  <Draggable defaultPosition={{ x: dx, y: dy }}>
+                  <Draggable
+                    defaultPosition={{ x: dx, y: dy }}
+                    onDrag={handleDrag}
+                    onStop={handleStop}
+                  >
                     <div
                       className="modelContainer flex-row-center"
                       style={{

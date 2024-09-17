@@ -26,10 +26,10 @@ const getScreenshot = ({ element, type, isHorizontalScreen }, callback) => {
   if (type == "withFrame") {
     html2canvas(element, {
       useCORS: true,
-      scale: 3,
-      x: isHorizontalScreen ? 600 : 0,
+      scale: 1,
+      x: isHorizontalScreen ? 656 : 0,
       y: 0,
-      width: isHorizontalScreen ? 650 : element.offsetWidth,
+      width: isHorizontalScreen ? 610 : element.offsetWidth,
       height: element.offsetHeight - element.offsetHeight / 8,
     }).then((canvas) => {
       const base64Image = canvas.toDataURL("image/png");
