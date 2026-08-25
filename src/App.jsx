@@ -22,12 +22,12 @@ function App() {
    * Model position
    */
   const [dx, setDx] = useState(80);
-  const [dy, setDy] = useState(50);
+  const [dy, setDy] = useState(30);
 
   /*
    * Model size
    */
-  const [size, setSize] = useState(25);
+  const [size, setSize] = useState(22);
 
   /*
    * ---------------------------------------------------------
