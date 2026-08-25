@@ -66,10 +66,11 @@ $color-one: #212121;
           position: relative;
 
           width: 45vh;
-          height: 80vh;
+          height: 67.5vh;
+
+          aspect-ratio: 2 / 3;
 
           border-radius: 5vw;
-
           overflow: hidden !important;
 
           .webcamWithModel {
