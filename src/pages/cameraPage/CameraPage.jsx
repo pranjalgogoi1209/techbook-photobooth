@@ -1,10 +1,4 @@
-```jsx
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Draggable from "react-draggable";
 import "./cameraPage.scss";
 import Webcam from "react-webcam";
@@ -86,7 +80,7 @@ export default function CameraPage({
       "Actual camera resolution:",
       video.videoWidth,
       "x",
-      video.videoHeight
+      video.videoHeight,
     );
 
     setIsCameraReady(true);
@@ -125,7 +119,7 @@ export default function CameraPage({
     const transform = modelRef.current.style.transform;
 
     const match = transform.match(
-      /translate(?:3d)?\(\s*([-0-9.]+)px,\s*([-0-9.]+)px/
+      /translate(?:3d)?\(\s*([-0-9.]+)px,\s*([-0-9.]+)px/,
     );
 
     if (match) {
@@ -153,55 +147,52 @@ export default function CameraPage({
    * =========================================================
    */
 
-  const getCropDimensions = useCallback(
-    (inputWidth, inputHeight) => {
-      if (!inputWidth || !inputHeight) {
-        return {
-          srcX: 0,
-          srcY: 0,
-          srcW: inputWidth,
-          srcH: inputHeight,
-        };
-      }
+  const getCropDimensions = useCallback((inputWidth, inputHeight) => {
+    if (!inputWidth || !inputHeight) {
+      return {
+        srcX: 0,
+        srcY: 0,
+        srcW: inputWidth,
+        srcH: inputHeight,
+      };
+    }
 
-      const inputRatio = inputWidth / inputHeight;
+    const inputRatio = inputWidth / inputHeight;
 
-      const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
+    const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
 
-      let srcX = 0;
-      let srcY = 0;
-      let srcW = inputWidth;
-      let srcH = inputHeight;
+    let srcX = 0;
+    let srcY = 0;
+    let srcW = inputWidth;
+    let srcH = inputHeight;
 
+    /*
+     * Camera is wider than 2:3.
+     * Crop left/right.
+     */
+
+    if (inputRatio > targetRatio) {
+      srcW = inputHeight * targetRatio;
+
+      srcX = (inputWidth - srcW) / 2;
+    } else {
       /*
-       * Camera is wider than 2:3.
-       * Crop left/right.
+       * Camera is taller than 2:3.
+       * Crop top/bottom.
        */
 
-      if (inputRatio > targetRatio) {
-        srcW = inputHeight * targetRatio;
+      srcH = inputWidth / targetRatio;
 
-        srcX = (inputWidth - srcW) / 2;
-      } else {
-        /*
-         * Camera is taller than 2:3.
-         * Crop top/bottom.
-         */
+      srcY = (inputHeight - srcH) / 2;
+    }
 
-        srcH = inputWidth / targetRatio;
-
-        srcY = (inputHeight - srcH) / 2;
-      }
-
-      return {
-        srcX,
-        srcY,
-        srcW,
-        srcH,
-      };
-    },
-    []
-  );
+    return {
+      srcX,
+      srcY,
+      srcW,
+      srcH,
+    };
+  }, []);
 
   /*
    * =========================================================
@@ -318,14 +309,9 @@ export default function CameraPage({
      * -------------------------------------------------------
      */
 
-    const {
-      srcX,
-      srcY,
-      srcW,
-      srcH,
-    } = getCropDimensions(
+    const { srcX, srcY, srcW, srcH } = getCropDimensions(
       video.videoWidth,
-      video.videoHeight
+      video.videoHeight,
     );
 
     /*
@@ -334,12 +320,7 @@ export default function CameraPage({
      * -------------------------------------------------------
      */
 
-    ctx.clearRect(
-      0,
-      0,
-      TARGET_WIDTH,
-      TARGET_HEIGHT
-    );
+    ctx.clearRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
     ctx.drawImage(
       video,
@@ -350,7 +331,7 @@ export default function CameraPage({
       0,
       0,
       TARGET_WIDTH,
-      TARGET_HEIGHT
+      TARGET_HEIGHT,
     );
 
     /*
@@ -364,10 +345,7 @@ export default function CameraPage({
     try {
       modelImage = await loadImage("/model-virat.png");
     } catch (error) {
-      console.error(
-        "Could not load model image:",
-        error
-      );
+      console.error("Could not load model image:", error);
 
       return null;
     }
@@ -383,11 +361,9 @@ export default function CameraPage({
      * We calculate the position using the container.
      */
 
-    const containerRect =
-      container.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
 
-    const modelRect =
-      modelElement.getBoundingClientRect();
+    const modelRect = modelElement.getBoundingClientRect();
 
     /*
      * The camera container is 2:3.
@@ -398,16 +374,11 @@ export default function CameraPage({
      * scaleX and scaleY can stretch the model.
      */
 
-    const scale =
-      TARGET_WIDTH / containerRect.width;
+    const scale = TARGET_WIDTH / containerRect.width;
 
-    const modelX =
-      (modelRect.left - containerRect.left) *
-      scale;
+    const modelX = (modelRect.left - containerRect.left) * scale;
 
-    const modelY =
-      (modelRect.top - containerRect.top) *
-      scale;
+    const modelY = (modelRect.top - containerRect.top) * scale;
 
     /*
      * -------------------------------------------------------
@@ -421,15 +392,11 @@ export default function CameraPage({
      * NEVER independently scale width and height.
      */
 
-    const modelWidth =
-      modelRect.width * scale;
+    const modelWidth = modelRect.width * scale;
 
-    const modelAspectRatio =
-      modelImage.naturalHeight /
-      modelImage.naturalWidth;
+    const modelAspectRatio = modelImage.naturalHeight / modelImage.naturalWidth;
 
-    const modelHeight =
-      modelWidth * modelAspectRatio;
+    const modelHeight = modelWidth * modelAspectRatio;
 
     console.log("Model capture:", {
       x: modelX,
@@ -447,13 +414,7 @@ export default function CameraPage({
      * -------------------------------------------------------
      */
 
-    ctx.drawImage(
-      modelImage,
-      modelX,
-      modelY,
-      modelWidth,
-      modelHeight
-    );
+    ctx.drawImage(modelImage, modelX, modelY, modelWidth, modelHeight);
 
     /*
      * -------------------------------------------------------
@@ -466,10 +427,7 @@ export default function CameraPage({
     try {
       frameImage = await loadImage(frame);
     } catch (error) {
-      console.error(
-        "Could not load frame image:",
-        error
-      );
+      console.error("Could not load frame image:", error);
 
       return null;
     }
@@ -480,13 +438,7 @@ export default function CameraPage({
      * -------------------------------------------------------
      */
 
-    ctx.drawImage(
-      frameImage,
-      0,
-      0,
-      TARGET_WIDTH,
-      TARGET_HEIGHT
-    );
+    ctx.drawImage(frameImage, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
     /*
      * -------------------------------------------------------
@@ -494,19 +446,12 @@ export default function CameraPage({
      * -------------------------------------------------------
      */
 
-    const finalImage =
-      canvas.toDataURL("image/png");
+    const finalImage = canvas.toDataURL("image/png");
 
-    console.log(
-      "Final PNG created:",
-      `${TARGET_WIDTH}x${TARGET_HEIGHT}`
-    );
+    console.log("Final PNG created:", `${TARGET_WIDTH}x${TARGET_HEIGHT}`);
 
     return finalImage;
-  }, [
-    getCropDimensions,
-    loadImage,
-  ]);
+  }, [getCropDimensions, loadImage]);
 
   /*
    * =========================================================
@@ -602,9 +547,7 @@ export default function CameraPage({
     }
 
     if (value === "dec") {
-      setSize((prev) =>
-        Math.max(5, prev - 0.5)
-      );
+      setSize((prev) => Math.max(5, prev - 0.5));
     }
   };
 
@@ -621,9 +564,7 @@ export default function CameraPage({
 
     if (counting > 1) {
       const timer = setTimeout(() => {
-        setCounting(
-          (previous) => previous - 1
-        );
+        setCounting((previous) => previous - 1);
       }, 1000);
 
       return () => {
@@ -642,13 +583,10 @@ export default function CameraPage({
          * are still mounted.
          */
 
-        const finalImage =
-          await captureCompleteImage();
+        const finalImage = await captureCompleteImage();
 
         if (!finalImage) {
-          console.error(
-            "Failed to create final image."
-          );
+          console.error("Failed to create final image.");
 
           return;
         }
@@ -660,9 +598,7 @@ export default function CameraPage({
         setCapturedImg(finalImage);
 
         if (setCapturedImgWithFrame) {
-          setCapturedImgWithFrame(
-            finalImage
-          );
+          setCapturedImgWithFrame(finalImage);
         }
 
         setIsCaptured(true);
@@ -724,16 +660,10 @@ export default function CameraPage({
       }
     };
 
-    window.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isCaptured]);
 
@@ -745,38 +675,28 @@ export default function CameraPage({
 
   return (
     <div className="CameraPage flex-col-center">
-
       {/* BACKGROUND */}
 
       <div className="cameraPageBgContainer flex-row-center">
-        <img
-          src={bg}
-          alt="cameraPageBg"
-        />
+        <img src={bg} alt="cameraPageBg" />
       </div>
 
       {/* MAIN CONTAINER */}
 
       <div className="mainContainer flex-col-center">
-
         <div className="wrapper flex-col-center">
-
           {/* CAMERA AREA */}
 
           <div className="cameraContainerWrapper flex-col-center">
-
             {/* EDITOR */}
 
             {isOpenEditor && !isCaptured && (
               <div className="editorContainer flex-row-center">
-
                 {/* LEFT */}
 
                 <div
                   className="moveBtn flex-row-center"
-                  onClick={() =>
-                    handleMoving("left")
-                  }
+                  onClick={() => handleMoving("left")}
                 >
                   <MdArrowLeft />
                 </div>
@@ -785,9 +705,7 @@ export default function CameraPage({
 
                 <div
                   className="moveBtn flex-row-center"
-                  onClick={() =>
-                    handleMoving("right")
-                  }
+                  onClick={() => handleMoving("right")}
                 >
                   <MdArrowRight />
                 </div>
@@ -796,9 +714,7 @@ export default function CameraPage({
 
                 <div
                   className="moveBtn flex-row-center"
-                  onClick={() =>
-                    handleMoving("up")
-                  }
+                  onClick={() => handleMoving("up")}
                 >
                   <MdOutlineArrowDropUp />
                 </div>
@@ -807,9 +723,7 @@ export default function CameraPage({
 
                 <div
                   className="moveBtn flex-row-center"
-                  onClick={() =>
-                    handleMoving("down")
-                  }
+                  onClick={() => handleMoving("down")}
                 >
                   <MdOutlineArrowDropDown />
                 </div>
@@ -818,9 +732,7 @@ export default function CameraPage({
 
                 <div
                   className="resizeBtn flex-row-center"
-                  onClick={() =>
-                    handleResizing("inc")
-                  }
+                  onClick={() => handleResizing("inc")}
                 >
                   <GoPlus />
                 </div>
@@ -829,9 +741,7 @@ export default function CameraPage({
 
                 <div
                   className="resizeBtn flex-row-center"
-                  onClick={() =>
-                    handleResizing("dec")
-                  }
+                  onClick={() => handleResizing("dec")}
                 >
                   <AiOutlineMinus />
                 </div>
@@ -840,13 +750,10 @@ export default function CameraPage({
 
                 <div
                   className="flex-row-center closeEditorBtn"
-                  onClick={() =>
-                    setIsOpenEditor(false)
-                  }
+                  onClick={() => setIsOpenEditor(false)}
                 >
                   <MdOutlineDone />
                 </div>
-
               </div>
             )}
 
@@ -861,7 +768,6 @@ export default function CameraPage({
                 aspectRatio: "2 / 3",
               }}
             >
-
               {!isCaptured && (
                 <>
                   {/* BACK CAMERA */}
@@ -884,12 +790,8 @@ export default function CameraPage({
                         ideal: 3240,
                       },
                     }}
-                    onUserMedia={
-                      handleCameraReady
-                    }
-                    onUserMediaError={
-                      handleCameraError
-                    }
+                    onUserMedia={handleCameraReady}
+                    onUserMediaError={handleCameraError}
                     style={{
                       position: "absolute",
                       top: 0,
@@ -916,8 +818,7 @@ export default function CameraPage({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background:
-                          "rgba(0,0,0,0.75)",
+                        background: "rgba(0,0,0,0.75)",
                         color: "#fff",
                         zIndex: 10,
                         fontSize: "18px",
@@ -929,26 +830,20 @@ export default function CameraPage({
 
                   {/* COUNTDOWN */}
 
-                  {isCounting &&
-                    counting > 0 && (
-                      <div
-                        className="countdownOverlay"
-                        style={{
-                          zIndex: 20,
-                        }}
-                      >
-                        <div
-                          key={counting}
-                          className="countdownNumber"
-                        >
-                          {counting}
-                        </div>
-
-                        <div className="countdownText">
-                          GET READY
-                        </div>
+                  {isCounting && counting > 0 && (
+                    <div
+                      className="countdownOverlay"
+                      style={{
+                        zIndex: 20,
+                      }}
+                    >
+                      <div key={counting} className="countdownNumber">
+                        {counting}
                       </div>
-                    )}
+
+                      <div className="countdownText">GET READY</div>
+                    </div>
+                  )}
 
                   {/* MODEL */}
 
@@ -992,35 +887,29 @@ export default function CameraPage({
                       pointerEvents: "none",
                     }}
                   >
-                    <img
-                      src={frame}
-                      alt="frame"
-                      draggable={false}
-                    />
+                    <img src={frame} alt="frame" draggable={false} />
                   </div>
                 </>
               )}
 
               {/* CAPTURED IMAGE */}
 
-              {isCaptured &&
-                capturedImg && (
-                  <img
-                    src={capturedImg}
-                    alt="capturedImg"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      objectPosition: "center",
-                      zIndex: 1,
-                      display: "block",
-                    }}
-                  />
-                )}
-
+              {isCaptured && capturedImg && (
+                <img
+                  src={capturedImg}
+                  alt="capturedImg"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    objectPosition: "center",
+                    zIndex: 1,
+                    display: "block",
+                  }}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -1029,17 +918,13 @@ export default function CameraPage({
 
         {isCaptured ? (
           <div className="retakeSubmitBtnContainer flex-row-center">
-
             {/* RETAKE */}
 
             <div
               onClick={retakeImg}
               className="retakeBtnContainer flex-row-center"
             >
-              <img
-                src={retakeBtn}
-                alt="retakeBtn"
-              />
+              <img src={retakeBtn} alt="retakeBtn" />
             </div>
 
             {/* SUBMIT */}
@@ -1048,30 +933,20 @@ export default function CameraPage({
               onClick={submitImg}
               className="submitBtnContainer flex-row-center"
             >
-              <img
-                src={submitBtn}
-                alt="submitBtn"
-              />
+              <img src={submitBtn} alt="submitBtn" />
             </div>
-
           </div>
         ) : (
-
           /* CAPTURE */
 
           <div
             onClick={captureImg}
             className="captureBtnContainer flex-row-center"
           >
-            <img
-              src={captureBtn}
-              alt="captureBtn"
-            />
+            <img src={captureBtn} alt="captureBtn" />
           </div>
         )}
-
       </div>
     </div>
   );
 }
-```
