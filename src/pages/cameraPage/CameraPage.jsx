@@ -1,280 +1,129 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import Draggable from "react-draggable";
-import "./cameraPage.scss";
-import Webcam from "react-webcam";
+import { useEffect, useRef, useState, useCallback } from "react";
+import "./camera-page.scss";
 import { useNavigate } from "react-router-dom";
+import Webcam from "react-webcam";
+import { ToastContainer, toast } from "react-toastify";
+import Btn from "../../components/btn/Btn";
+import buttonBg from "../../assets/button.png";
 
-import {
-  MdArrowLeft,
-  MdArrowRight,
-  MdOutlineArrowDropUp,
-  MdOutlineArrowDropDown,
-  MdOutlineDone,
-} from "react-icons/md";
+const toastOptions = {
+  position: "top-center",
+  autoClose: 4000,
+  pauseOnHover: true,
+  draggable: true,
+  theme: "light",
+};
 
-import { GoPlus } from "react-icons/go";
-import { AiOutlineMinus } from "react-icons/ai";
-
-import captureBtn from "./../../assets/cameraPage/captureBtn.png";
-import retakeBtn from "./../../assets/cameraPage/retakeBtn.png";
-import submitBtn from "./../../assets/cameraPage/submitBtn.png";
-import frame from "./../../assets/cameraPage/frame.png";
-import bg from "./../../assets/bg.webp";
+// Final output: 2:3 portrait
+const TARGET_WIDTH = 1080;
+const TARGET_HEIGHT = 1620;
 
 export default function CameraPage({
   capturedImg,
   setCapturedImg,
-  setCapturedImgWithFrame,
-  isHorizontalScreen,
-
-  dx,
-  dy,
-  setDx,
-  setDy,
-
-  size,
-  setSize,
+  selectedTemplate,
 }) {
-  const webcamRef = useRef(null);
-  const modelRef = useRef(null);
-  const cameraStageRef = useRef(null);
-  const captureCanvasRef = useRef(null);
-
   const navigate = useNavigate();
 
+  const camRef = useRef(null);
+  const captureCanvasRef = useRef(null);
+
+  const [previewImg, setPreviewImg] = useState("");
   const [isCaptured, setIsCaptured] = useState(Boolean(capturedImg));
 
+  const [countdown, setCountdown] = useState(3);
   const [isCounting, setIsCounting] = useState(false);
-  const [counting, setCounting] = useState(5);
-  const [isOpenEditor, setIsOpenEditor] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
 
-  /*
-   * =========================================================
-   * FINAL IMAGE
-   * =========================================================
-   */
+  // --------------------------------------------------
+  // Calculate center crop for 2:3
+  // --------------------------------------------------
+  const getCropDimensions = useCallback((inputW, inputH) => {
+    if (!inputW || !inputH) {
+      return {
+        srcX: 0,
+        srcY: 0,
+        srcW: inputW,
+        srcH: inputH,
+      };
+    }
 
-  const TARGET_WIDTH = 1080;
-  const TARGET_HEIGHT = 1620;
+    const inputRatio = inputW / inputH;
+    const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
 
-  /*
-   * =========================================================
-   * CAMERA READY
-   * =========================================================
-   */
+    let srcX = 0;
+    let srcY = 0;
+    let srcW = inputW;
+    let srcH = inputH;
 
+    if (inputRatio > targetRatio) {
+      // Camera is wider than 2:3.
+      // Crop left and right.
+      srcW = inputH * targetRatio;
+      srcX = (inputW - srcW) / 2;
+    } else {
+      // Camera is taller than 2:3.
+      // Crop top and bottom.
+      srcH = inputW / targetRatio;
+      srcY = (inputH - srcH) / 2;
+    }
+
+    return {
+      srcX,
+      srcY,
+      srcW,
+      srcH,
+    };
+  }, []);
+
+  // --------------------------------------------------
+  // Camera ready
+  // --------------------------------------------------
   const handleCameraReady = useCallback(() => {
-    const video = webcamRef.current?.video;
+    const video = camRef.current?.video;
 
     if (!video) {
-      console.warn("Video element not found.");
+      console.warn("Camera video element not found.");
       return;
     }
 
-    console.log(
-      "Actual camera resolution:",
-      video.videoWidth,
-      "x",
-      video.videoHeight,
-    );
+    console.log("Camera ready");
+    console.log("Video resolution:", video.videoWidth, "x", video.videoHeight);
 
     setIsCameraReady(true);
   }, []);
 
-  /*
-   * =========================================================
-   * CAMERA ERROR
-   * =========================================================
-   */
-
+  // --------------------------------------------------
+  // Camera error
+  // --------------------------------------------------
   const handleCameraError = useCallback((error) => {
     console.error("Camera error:", error);
+
     setIsCameraReady(false);
+
+    toast.error(
+      "Unable to access camera. Please allow camera permission.",
+      toastOptions,
+    );
   }, []);
 
-  /*
-   * =========================================================
-   * MODEL MOVEMENT
-   * =========================================================
-   */
-
-  const handleMoving = (value) => {
-    switch (value) {
-      case "up":
-        setDy((prev) => prev - 0.5);
-        break;
-
-      case "down":
-        setDy((prev) => prev + 0.5);
-        break;
-
-      case "left":
-        setDx((prev) => prev - 0.5);
-        break;
-
-      case "right":
-        setDx((prev) => prev + 0.5);
-        break;
-
-      default:
-        break;
-    }
-  };
-
-  /*
-   * =========================================================
-   * MODEL RESIZE
-   * =========================================================
-   */
-
-  const handleResizing = (value) => {
-    if (value === "inc") {
-      setSize((prev) => prev + 0.5);
-    }
-
-    if (value === "dec") {
-      setSize((prev) => Math.max(5, prev - 0.5));
-    }
-  };
-
-  /*
-   * =========================================================
-   * DRAG
-   * =========================================================
-   */
-
-  const handleStart = () => {};
-
-  const handleDrag = () => {};
-
-  const handleStop = () => {
-    /*
-     * Keep the React state as the source of truth.
-     *
-     * react-draggable's position is already being controlled
-     * by the stored dx/dy values through defaultPosition.
-     *
-     * We don't calculate position from transform here because
-     * transform parsing can be unreliable.
-     */
-  };
-
-  /*
-   * =========================================================
-   * EDITOR
-   * =========================================================
-   */
-
-  const handleEditor = () => {
-    setIsOpenEditor(true);
-  };
-
-  /*
-   * =========================================================
-   * CAMERA 2:3 CROP
-   * =========================================================
-   */
-
-  const getCropDimensions = useCallback((videoWidth, videoHeight) => {
-    const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
-
-    const videoRatio = videoWidth / videoHeight;
-
-    let sourceX = 0;
-    let sourceY = 0;
-    let sourceWidth = videoWidth;
-    let sourceHeight = videoHeight;
-
-    /*
-     * Camera is wider than 2:3.
-     *
-     * Crop left and right.
-     */
-
-    if (videoRatio > targetRatio) {
-      sourceHeight = videoHeight;
-
-      sourceWidth = videoHeight * targetRatio;
-
-      sourceX = (videoWidth - sourceWidth) / 2;
-    } else {
-      /*
-       * Camera is taller than 2:3.
-       *
-       * Crop top and bottom.
-       */
-
-      sourceWidth = videoWidth;
-
-      sourceHeight = videoWidth / targetRatio;
-
-      sourceY = (videoHeight - sourceHeight) / 2;
-    }
-
-    return {
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-    };
-  }, []);
-
-  /*
-   * =========================================================
-   * LOAD IMAGE
-   * =========================================================
-   */
-
-  const loadImage = useCallback((src) => {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-
-      image.onload = () => {
-        resolve(image);
-      };
-
-      image.onerror = () => {
-        reject(new Error(`Unable to load image: ${src}`));
-      };
-
-      image.src = src;
-    });
-  }, []);
-
-  /*
-   * =========================================================
-   * CAPTURE COMPLETE IMAGE
-   * =========================================================
-   *
-   * VIDEO FRAME
-   *      +
-   * MODEL
-   *      +
-   * FRAME
-   *      ↓
-   * 1080 x 1620 PNG
-   */
-
-  const captureCompleteImage = useCallback(async () => {
-    const video = webcamRef.current?.video;
-
-    const stage = cameraStageRef.current;
-
-    const model = modelRef.current;
+  // --------------------------------------------------
+  // Capture ACTUAL VIDEO FRAME
+  //
+  // IMPORTANT:
+  // We do NOT use webcam.getScreenshot()
+  //
+  // We directly take the current frame from:
+  //
+  // <video>
+  //
+  // and draw it into a canvas.
+  // --------------------------------------------------
+  const captureVideoFrame = useCallback(() => {
+    const video = camRef.current?.video;
 
     if (!video) {
-      console.error("Video not available.");
-      return null;
-    }
-
-    if (!stage) {
-      console.error("Camera stage not available.");
-      return null;
-    }
-
-    if (!model) {
-      console.error("Model element not available.");
+      console.error("Video element not available.");
       return null;
     }
 
@@ -284,16 +133,18 @@ export default function CameraPage({
     }
 
     if (!video.videoWidth || !video.videoHeight) {
-      console.error("Invalid camera dimensions.");
+      console.error("Video dimensions are unavailable.");
       return null;
     }
 
-    /*
-     * ---------------------------------------------------------
-     * CANVAS
-     * ---------------------------------------------------------
-     */
+    console.log(
+      "Capturing actual video frame:",
+      video.videoWidth,
+      "x",
+      video.videoHeight,
+    );
 
+    // Reuse canvas
     let canvas = captureCanvasRef.current;
 
     if (!canvas) {
@@ -301,6 +152,7 @@ export default function CameraPage({
       captureCanvasRef.current = canvas;
     }
 
+    // Final output resolution
     canvas.width = TARGET_WIDTH;
     canvas.height = TARGET_HEIGHT;
 
@@ -309,710 +161,311 @@ export default function CameraPage({
     });
 
     if (!ctx) {
-      console.error("Canvas context unavailable.");
+      console.error("Unable to create canvas context.");
       return null;
     }
 
-    /*
-     * High quality rendering.
-     */
-
+    // High quality rendering
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
 
-    /*
-     * ---------------------------------------------------------
-     * CAMERA CROP
-     * ---------------------------------------------------------
-     */
-
-    const { sourceX, sourceY, sourceWidth, sourceHeight } = getCropDimensions(
+    // Get proportional 2:3 crop
+    const { srcX, srcY, srcW, srcH } = getCropDimensions(
       video.videoWidth,
       video.videoHeight,
     );
 
-    /*
-     * ---------------------------------------------------------
-     * CAMERA FRAME
-     * ---------------------------------------------------------
-     *
-     * Draw directly from the HTML video.
-     */
+    // Clear previous frame
+    ctx.clearRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
+    // Draw CURRENT VIDEO FRAME directly
     ctx.drawImage(
       video,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
+      srcX,
+      srcY,
+      srcW,
+      srcH,
       0,
       0,
       TARGET_WIDTH,
       TARGET_HEIGHT,
     );
 
-    /*
-     * ---------------------------------------------------------
-     * MODEL POSITION
-     * ---------------------------------------------------------
-     *
-     * IMPORTANT:
-     *
-     * Use ONE scale factor because the source and target
-     * are both 2:3.
-     *
-     * This prevents stretching.
-     */
+    // Export as PNG
+    const pngData = canvas.toDataURL("image/png");
 
-    const stageRect = stage.getBoundingClientRect();
+    console.log("PNG captured:", TARGET_WIDTH, "x", TARGET_HEIGHT);
 
-    const modelRect = model.getBoundingClientRect();
+    return pngData;
+  }, [getCropDimensions]);
 
-    /*
-     * Use the width scale only.
-     *
-     * Because stage is 2:3 and target is 2:3,
-     * X and Y use the same scale.
-     */
+  // --------------------------------------------------
+  // Countdown
+  // --------------------------------------------------
+  useEffect(() => {
+    let countdownInterval;
 
-    const scale = TARGET_WIDTH / stageRect.width;
-
-    /*
-     * Model's displayed position relative to
-     * the exact camera stage.
-     */
-
-    const modelX = (modelRect.left - stageRect.left) * scale;
-
-    const modelY = (modelRect.top - stageRect.top) * scale;
-
-    /*
-     * Preserve model's natural aspect ratio.
-     *
-     * Don't independently stretch width/height.
-     */
-
-    const modelWidth = modelRect.width * scale;
-
-    const modelHeight = modelRect.height * scale;
-
-    console.log("Model final position:", {
-      x: modelX,
-      y: modelY,
-      width: modelWidth,
-      height: modelHeight,
-    });
-
-    /*
-     * ---------------------------------------------------------
-     * MODEL IMAGE
-     * ---------------------------------------------------------
-     */
-
-    let modelImage;
-
-    try {
-      modelImage = await loadImage("/model-virat.png");
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-
-    /*
-     * Draw model.
-     */
-
-    ctx.drawImage(modelImage, modelX, modelY, modelWidth, modelHeight);
-
-    /*
-     * ---------------------------------------------------------
-     * FRAME
-     * ---------------------------------------------------------
-     */
-
-    let frameImage;
-
-    try {
-      frameImage = await loadImage(frame);
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-
-    /*
-     * Frame is always exactly the same size
-     * as the final canvas.
-     */
-
-    ctx.drawImage(frameImage, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
-
-    /*
-     * ---------------------------------------------------------
-     * PNG
-     * ---------------------------------------------------------
-     */
-
-    const finalImage = canvas.toDataURL("image/png");
-
-    console.log("FINAL IMAGE:", TARGET_WIDTH, "x", TARGET_HEIGHT);
-
-    return finalImage;
-  }, [getCropDimensions, loadImage]);
-
-  /*
-   * =========================================================
-   * CAPTURE
-   * =========================================================
-   */
-
-  const captureImg = () => {
-    if (isCounting || isCaptured) {
+    if (!isCounting) {
       return;
     }
 
+    if (countdown > 0) {
+      countdownInterval = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    }
+
+    if (countdown === 0) {
+      const imageData = captureVideoFrame();
+
+      if (imageData) {
+        setCapturedImg(imageData);
+        setPreviewImg(imageData);
+        setIsCaptured(true);
+      } else {
+        toast.error("Failed to capture image. Please try again.", toastOptions);
+      }
+
+      setIsCounting(false);
+    }
+
+    return () => {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+    };
+  }, [isCounting, countdown, captureVideoFrame, setCapturedImg]);
+
+  // --------------------------------------------------
+  // Capture button
+  // --------------------------------------------------
+  const handleCapture = () => {
     if (!isCameraReady) {
-      console.warn("Camera is not ready.");
+      toast.error("Camera is not ready yet.", toastOptions);
       return;
     }
 
-    setCounting(5);
+    setCountdown(3);
     setIsCounting(true);
   };
 
-  /*
-   * =========================================================
-   * RETAKE
-   * =========================================================
-   */
-
-  const retakeImg = () => {
-    setCapturedImg("");
-
-    if (setCapturedImgWithFrame) {
-      setCapturedImgWithFrame("");
-    }
-
+  // --------------------------------------------------
+  // Retake
+  // --------------------------------------------------
+  const handleRetake = () => {
     setIsCaptured(false);
+    setCapturedImg("");
+    setPreviewImg("");
+    setCountdown(3);
     setIsCounting(false);
-    setCounting(5);
-    setIsCameraReady(false);
   };
 
-  /*
-   * =========================================================
-   * SUBMIT
-   * =========================================================
-   */
-
-  const submitImg = () => {
-    if (!capturedImg) {
-      console.warn("No captured image.");
+  // --------------------------------------------------
+  // Next
+  // --------------------------------------------------
+  const handleSubmit = () => {
+    if (!isCaptured || !capturedImg) {
+      toast.error("Please capture image first!", toastOptions);
       return;
     }
 
     navigate("/output");
   };
 
-  /*
-   * =========================================================
-   * COUNTDOWN
-   * =========================================================
-   */
+  // --------------------------------------------------
+  // Video constraints
+  //
+  // We request high resolution.
+  //
+  // The actual resolution depends on the camera/device/browser.
+  // --------------------------------------------------
+  const videoConstraints = {
+    facingMode: {
+      ideal: "environment",
+    },
 
-  useEffect(() => {
-    if (!isCounting) {
-      return;
-    }
+    width: {
+      ideal: 2160,
+    },
 
-    if (counting > 1) {
-      const timer = setTimeout(() => {
-        setCounting((previous) => previous - 1);
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-
-    if (counting === 1) {
-      const timer = setTimeout(async () => {
-        setIsCounting(false);
-
-        /*
-         * IMPORTANT:
-         *
-         * Capture BEFORE setting isCaptured=true.
-         *
-         * This guarantees the video and model are still
-         * mounted when the canvas is created.
-         */
-
-        const finalImage = await captureCompleteImage();
-
-        if (!finalImage) {
-          console.error("Failed to create final image.");
-          return;
-        }
-
-        /*
-         * -----------------------------------------------------
-         * SAVE COMPLETE IMAGE
-         * -----------------------------------------------------
-         *
-         * This is now:
-         *
-         * CAMERA + MODEL + FRAME
-         */
-
-        setCapturedImg(finalImage);
-
-        /*
-         * IMPORTANT:
-         *
-         * OutputPage uploads capturedImgWithFrame.
-         *
-         * Therefore this state gets the SAME complete PNG.
-         */
-
-        if (setCapturedImgWithFrame) {
-          setCapturedImgWithFrame(finalImage);
-        }
-
-        /*
-         * Only now switch to captured mode.
-         */
-
-        setIsCaptured(true);
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [
-    isCounting,
-    counting,
-    captureCompleteImage,
-    setCapturedImg,
-    setCapturedImgWithFrame,
-  ]);
-
-  /*
-   * =========================================================
-   * KEYBOARD
-   * =========================================================
-   */
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (isCaptured) {
-        return;
-      }
-
-      switch (event.key) {
-        case "ArrowUp":
-          handleMoving("up");
-          break;
-
-        case "ArrowDown":
-          handleMoving("down");
-          break;
-
-        case "ArrowLeft":
-          handleMoving("left");
-          break;
-
-        case "ArrowRight":
-          handleMoving("right");
-          break;
-
-        case "+":
-        case "=":
-          handleResizing("inc");
-          break;
-
-        case "-":
-        case "_":
-          handleResizing("dec");
-          break;
-
-        default:
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isCaptured]);
-
-  /*
-   * =========================================================
-   * RENDER
-   * =========================================================
-   */
+    height: {
+      ideal: 3240,
+    },
+  };
 
   return (
-    <div className="CameraPage flex-col-center">
-      {/* BACKGROUND */}
+    <div className="flex-col-center CameraPage">
+      <h1 className="title new">
+        {isCaptured ? "Do you like it ?" : "Capture Your Photo"}
+      </h1>
 
-      <div className="cameraPageBgContainer flex-row-center">
-        <img src={bg} alt="cameraPageBg" />
-      </div>
+      <div className="flex-row-center mainCameraWrapper">
+        <div
+          className="webcamParent"
+          style={{
+            width: "100%",
+            maxWidth: "540px",
 
-      {/* MAIN */}
+            // Exact 2:3 preview
+            aspectRatio: "2 / 3",
 
-      <div className="mainContainer flex-col-center">
-        <div className="wrapper flex-col-center">
-          {/* EDITOR */}
+            position: "relative",
 
-          {isOpenEditor && !isCaptured && (
-            <div className="editorContainer flex-row-center">
-              <div
-                className="moveBtn flex-row-center"
-                onClick={() => handleMoving("left")}
+            display: "grid",
+            placeItems: "center",
+
+            borderRadius: "16px",
+            overflow: "hidden",
+
+            backgroundColor: "#111",
+          }}
+        >
+          {/* -------------------------------------------
+              REAL CAMERA VIDEO
+          -------------------------------------------- */}
+          {!isCaptured && (
+            <Webcam
+              ref={camRef}
+              id="webcam"
+              audio={false}
+              mirrored={false}
+              screenshotFormat="image/png"
+              videoConstraints={videoConstraints}
+              onUserMedia={handleCameraReady}
+              onUserMediaError={handleCameraError}
+              style={{
+                gridArea: "1 / 1",
+
+                width: "100%",
+                height: "100%",
+
+                objectFit: "cover",
+
+                display: "block",
+
+                // The video itself is shown.
+                // No screenshot is being used.
+              }}
+            />
+          )}
+
+          {/* -------------------------------------------
+              CAMERA LOADING
+          -------------------------------------------- */}
+          {!isCaptured && !isCameraReady && (
+            <div
+              style={{
+                gridArea: "1 / 1",
+
+                width: "100%",
+                height: "100%",
+
+                display: "flex",
+                flexDirection: "column",
+
+                alignItems: "center",
+                justifyContent: "center",
+
+                background: "#111",
+                color: "#fff",
+
+                zIndex: 5,
+
+                textAlign: "center",
+                padding: "20px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "18px",
+                }}
               >
-                <MdArrowLeft />
-              </div>
+                Starting Camera...
+              </span>
 
-              <div
-                className="moveBtn flex-row-center"
-                onClick={() => handleMoving("right")}
+              <span
+                style={{
+                  fontSize: "13px",
+                  marginTop: "8px",
+                  opacity: 0.7,
+                }}
               >
-                <MdArrowRight />
-              </div>
-
-              <div
-                className="moveBtn flex-row-center"
-                onClick={() => handleMoving("up")}
-              >
-                <MdOutlineArrowDropUp />
-              </div>
-
-              <div
-                className="moveBtn flex-row-center"
-                onClick={() => handleMoving("down")}
-              >
-                <MdOutlineArrowDropDown />
-              </div>
-
-              <div
-                className="resizeBtn flex-row-center"
-                onClick={() => handleResizing("inc")}
-              >
-                <GoPlus />
-              </div>
-
-              <div
-                className="resizeBtn flex-row-center"
-                onClick={() => handleResizing("dec")}
-              >
-                <AiOutlineMinus />
-              </div>
-
-              <div
-                className="flex-row-center closeEditorBtn"
-                onClick={() => setIsOpenEditor(false)}
-              >
-                <MdOutlineDone />
-              </div>
+                Please allow camera permission
+              </span>
             </div>
           )}
 
-          {/* =================================================
-              CAMERA STAGE
-          ================================================= */}
+          {/* -------------------------------------------
+              CAPTURED IMAGE
+          -------------------------------------------- */}
+          {isCaptured && previewImg && (
+            <img
+              className="capturedImage"
+              src={previewImg}
+              alt="Captured"
+              style={{
+                gridArea: "1 / 1",
 
-          <div
-            ref={cameraStageRef}
-            className="cameraContainer flex-row-center"
-            style={{
-              position: "relative",
+                width: "100%",
+                height: "100%",
 
-              /*
-               * FORCE THE CAMERA STAGE TO EXACTLY 2:3.
-               *
-               * This is the key fix for the captured preview.
-               */
+                objectFit: "cover",
 
-              aspectRatio: "2 / 3",
+                display: "block",
+              }}
+            />
+          )}
 
-              width: "100%",
+          {/* -------------------------------------------
+              COUNTDOWN
+          -------------------------------------------- */}
+          {!isCaptured && isCounting && (
+            <span
+              className="countdown"
+              style={{
+                gridArea: "1 / 1",
 
-              maxWidth: "540px",
+                zIndex: 10,
 
-              height: "auto",
+                fontSize: "80px",
+                fontWeight: "bold",
 
-              overflow: "hidden",
+                color: "#fff",
 
-              flexShrink: 0,
-            }}
-          >
-            {/* =================================================
-                LIVE CAMERA
-            ================================================= */}
-
-            {!isCaptured && (
-              <>
-                <Webcam
-                  ref={webcamRef}
-                  id="webcam"
-                  audio={false}
-                  /*
-                   * BACK CAMERA
-                   */
-
-                  mirrored={false}
-                  videoConstraints={{
-                    facingMode: {
-                      exact: "environment",
-                    },
-
-                    width: {
-                      ideal: 2160,
-                    },
-
-                    height: {
-                      ideal: 3240,
-                    },
-                  }}
-                  onUserMedia={handleCameraReady}
-                  onUserMediaError={handleCameraError}
-                  style={{
-                    position: "absolute",
-
-                    top: 0,
-                    left: 0,
-
-                    width: "100%",
-                    height: "100%",
-
-                    /*
-                     * Live preview remains exactly
-                     * as before.
-                     */
-
-                    objectFit: "cover",
-
-                    zIndex: 1,
-
-                    display: "block",
-
-                    /*
-                     * No mirror.
-                     */
-
-                    transform: "scaleX(1)",
-                  }}
-                />
-
-                {/* CAMERA LOADING */}
-
-                {!isCameraReady && (
-                  <div
-                    style={{
-                      position: "absolute",
-
-                      inset: 0,
-
-                      display: "flex",
-
-                      alignItems: "center",
-
-                      justifyContent: "center",
-
-                      background: "rgba(0,0,0,0.75)",
-
-                      color: "#fff",
-
-                      zIndex: 10,
-
-                      fontSize: "18px",
-                    }}
-                  >
-                    Starting Camera...
-                  </div>
-                )}
-
-                {/* COUNTDOWN */}
-
-                {isCounting && (
-                  <div
-                    className="countdownOverlay"
-                    style={{
-                      zIndex: 20,
-                    }}
-                  >
-                    <div key={counting} className="countdownNumber">
-                      {counting}
-                    </div>
-
-                    <div className="countdownText">GET READY</div>
-                  </div>
-                )}
-
-                {/* =================================================
-                    MODEL
-                ================================================= */}
-
-                <Draggable
-                  nodeRef={modelRef}
-                  defaultPosition={{
-                    x: dx || 0,
-                    y: dy || 0,
-                  }}
-                  onStart={handleStart}
-                  onDrag={handleDrag}
-                  onStop={handleStop}
-                >
-                  <div
-                    ref={modelRef}
-                    className="modelContainer flex-row-center"
-                    style={{
-                      width: `${size}vh`,
-
-                      /*
-                       * Do NOT set height.
-                       *
-                       * The image's natural aspect ratio
-                       * controls the height.
-                       */
-
-                      height: "auto",
-
-                      zIndex: 2,
-
-                      flexShrink: 0,
-                    }}
-                  >
-                    <img
-                      src="/model-virat.png"
-                      alt="model"
-                      draggable={false}
-                      style={{
-                        width: "100%",
-                        height: "auto",
-
-                        display: "block",
-
-                        objectFit: "contain",
-                      }}
-                    />
-                  </div>
-                </Draggable>
-
-                {/* =================================================
-                    FRAME
-                ================================================= */}
-
-                <div
-                  className="frameContainer flex-row-center"
-                  style={{
-                    position: "absolute",
-
-                    inset: 0,
-
-                    width: "100%",
-                    height: "100%",
-
-                    zIndex: 3,
-
-                    pointerEvents: "none",
-                  }}
-                >
-                  <img
-                    src={frame}
-                    alt="frame"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-
-                      objectFit: "fill",
-
-                      display: "block",
-                    }}
-                    draggable={false}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* =================================================
-                CAPTURED IMAGE
-            ================================================= */}
-
-            {isCaptured && capturedImg && (
-              <img
-                src={capturedImg}
-                alt="capturedImg"
-                style={{
-                  /*
-                   * IMPORTANT:
-                   * Don't force this image into an arbitrary
-                   * width/height combination.
-                   */
-
-                  position: "absolute",
-
-                  inset: 0,
-
-                  width: "100%",
-
-                  height: "100%",
-
-                  /*
-                   * The source itself is exactly 1080x1620.
-                   *
-                   * contain guarantees the image is never
-                   * distorted.
-                   */
-
-                  objectFit: "contain",
-
-                  aspectRatio: "2 / 3",
-
-                  display: "block",
-
-                  zIndex: 1,
-                }}
-              />
-            )}
-          </div>
+                textShadow: "0 2px 10px rgba(0,0,0,0.8)",
+              }}
+            >
+              {countdown}
+            </span>
+          )}
         </div>
-
-        {/* =====================================================
-            BUTTONS
-        ====================================================== */}
-
-        {isCaptured ? (
-          <div className="retakeSubmitBtnContainer flex-row-center">
-            {/* RETAKE */}
-
-            <div
-              onClick={retakeImg}
-              className="retakeBtnContainer flex-row-center"
-            >
-              <img src={retakeBtn} alt="retakeBtn" />
-            </div>
-
-            {/* SUBMIT */}
-
-            <div
-              onClick={submitImg}
-              className="submitBtnContainer flex-row-center"
-            >
-              <img src={submitBtn} alt="submitBtn" />
-            </div>
-          </div>
-        ) : (
-          /* CAPTURE */
-
-          <div
-            onClick={captureImg}
-            className="captureBtnContainer flex-row-center"
-          >
-            <img src={captureBtn} alt="captureBtn" />
-          </div>
-        )}
       </div>
+
+      {/* -------------------------------------------
+          BUTTONS
+      -------------------------------------------- */}
+      <div className="flex-row-center bottomButton">
+        {isCaptured && (
+          <button
+            className="img-part retakeBtn"
+            onClick={handleRetake}
+            type="button"
+          >
+            <Btn title="RETAKE" bgImage={buttonBg} />
+          </button>
+        )}
+
+        <button
+          className="img-part captureBtn"
+          onClick={isCaptured ? handleSubmit : handleCapture}
+          disabled={isCounting || (!isCaptured && !isCameraReady)}
+          type="button"
+        >
+          <Btn title={isCaptured ? "NEXT" : "CAPTURE"} bgImage={buttonBg} />
+        </button>
+      </div>
+
+      <ToastContainer />
     </div>
   );
 }
