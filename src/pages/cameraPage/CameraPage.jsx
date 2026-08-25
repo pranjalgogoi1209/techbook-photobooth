@@ -779,13 +779,11 @@ export default function CameraPage({
                     mirrored={false}
                     videoConstraints={{
                       facingMode: {
-                        exact: "environment",
+                        ideal: "environment",
                       },
-
                       width: {
                         ideal: 2160,
                       },
-
                       height: {
                         ideal: 3240,
                       },
@@ -801,7 +799,7 @@ export default function CameraPage({
                       objectFit: "cover",
                       zIndex: 1,
                       display: "block",
-                      transform: "scaleX(1)",
+                      // transform: "scaleX(1)",
                     }}
                   />
 
