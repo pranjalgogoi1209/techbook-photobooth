@@ -1,103 +1,513 @@
-.OutputPage {
-  height: 100svh;
+$color-one: #212121;
+
+.my-camera-custom-class {
+  transform: scaleX(-1) !important;
+}
+
+.CameraPage {
+  height: 100vh;
   position: relative;
-  .outputBgContainer {
+
+  .cameraPageBgContainer {
     width: 100%;
     height: 100%;
   }
-  .qrCodeContainer {
+
+  .mainContainer {
     height: 100%;
+
     position: absolute;
-    inset: 0;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
     justify-content: space-between;
+
     padding: 5vh;
+
     .wrapper {
       gap: 6.2vh;
+
       .logoContainer {
-        width: 35vh;
+        width: 20vh;
       }
-      .qrContainer {
+
+      .cameraContainerWrapper {
         position: relative;
-        width: 34vh;
-        height: 39.5vh;
-        align-items: flex-start;
-        padding-top: 0.5vh;
-        background-color: #fff;
-        overflow: hidden;
-        border-radius: 2vw;
-        .qrcodeImg {
-          //   border: 10px solid red;
-          width: 85%;
-          height: 85%;
-          #qrCode {
-            width: 35vh;
-            height: 35vh;
+
+        .editorContainer {
+          position: absolute;
+
+          top: -10.5%;
+          right: 0;
+
+          border: 0.1vw solid #212121;
+
+          background-color: #212121;
+
+          gap: 0.5vw;
+
+          z-index: 30;
+
+          svg {
+            font-size: 4vh;
+
+            border: 0.1vw solid #f1f1f1;
+
+            color: #fff;
+          }
+
+          .closeEditorBtn {
+            svg {
+              color: greenyellow;
+            }
           }
         }
-        .qrFrameContainer {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
+
+        .cameraContainer {
+          position: relative;
+
+          width: 45vh;
+          height: 80vh;
+
+          border-radius: 5vw;
+
+          overflow: hidden !important;
+
+          /*
+           * ====================================================
+           * LIVE CAMERA
+           * ====================================================
+           */
+
+          .webcamWithModel {
+            position: relative;
+
+            width: 100%;
+            height: 100%;
+
+            overflow: hidden;
+
+            transform: none !important;
+
+            #webcam {
+              position: absolute;
+
+              width: auto;
+              height: 100%;
+
+              max-width: none;
+
+              object-fit: cover;
+
+              /*
+               * Mirror ONLY camera.
+               */
+
+              transform: scaleX(-1);
+
+              transform-origin: center;
+            }
+
+            /*
+             * ==================================================
+             * MODEL
+             * ==================================================
+             */
+
+            .modelContainer {
+              position: absolute;
+
+              height: auto;
+
+              z-index: 3;
+
+              transform-origin: center;
+
+              /*
+               * Never mirror model.
+               */
+
+              img {
+                width: 100%;
+                height: auto;
+
+                display: block;
+
+                transform: none !important;
+
+                user-select: none;
+
+                -webkit-user-drag: none;
+              }
+            }
+
+            /*
+             * ==================================================
+             * COUNTDOWN
+             * ==================================================
+             */
+
+            .countdownOverlay {
+              position: absolute;
+
+              inset: 0;
+
+              display: flex;
+
+              flex-direction: column;
+
+              align-items: center;
+
+              justify-content: center;
+
+              z-index: 20;
+
+              pointer-events: none;
+
+              background: rgba(0, 0, 0, 0.08);
+            }
+
+            .countdownNumber {
+              position: relative;
+
+              display: flex;
+
+              align-items: center;
+
+              justify-content: center;
+
+              width: 16vh;
+              height: 16vh;
+
+              border-radius: 50%;
+
+              color: #fff;
+
+              font-size: 10vh;
+
+              font-weight: 800;
+
+              line-height: 1;
+
+              font-family: Arial, Helvetica, sans-serif;
+
+              background: rgba(0, 0, 0, 0.35);
+
+              backdrop-filter: blur(8px);
+
+              -webkit-backdrop-filter: blur(8px);
+
+              border: 2px solid rgba(255, 255, 255, 0.8);
+
+              box-shadow:
+                0 0 20px rgba(255, 255, 255, 0.25),
+                0 0 50px rgba(0, 0, 0, 0.35);
+
+              text-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+
+              animation: countdownPop 0.9s cubic-bezier(0.16, 1, 0.3, 1)
+                forwards;
+            }
+
+            .countdownNumber::before {
+              content: "";
+
+              position: absolute;
+
+              inset: -8px;
+
+              border-radius: 50%;
+
+              border: 2px solid rgba(255, 255, 255, 0.25);
+
+              animation: countdownRing 0.9s ease-out forwards;
+            }
+
+            .countdownText {
+              margin-top: 2vh;
+
+              color: #fff;
+
+              font-size: 1.8vh;
+
+              font-weight: 700;
+
+              letter-spacing: 0.35em;
+
+              text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+
+              animation: countdownTextFade 0.9s ease-out forwards;
+            }
+          }
+
+          /*
+           * ====================================================
+           * FRAME
+           * ====================================================
+           */
+
+          .frameContainer {
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            z-index: 10;
+
+            pointer-events: none;
+
+            transform: none !important;
+
+            img {
+              width: 100%;
+              height: 100%;
+
+              object-fit: fill;
+
+              transform: none !important;
+
+              pointer-events: none;
+            }
+          }
+
+          /*
+           * ====================================================
+           * CAPTURED IMAGE
+           * ====================================================
+           */
+
+          .capturedImgContainer {
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background-color: $color-one;
+
+            overflow: hidden;
+
+            transform: none !important;
+
+            /*
+             * IMPORTANT:
+             *
+             * DO NOT use object-fit: cover.
+             *
+             * The captured image is 2:3 while the camera
+             * display is 9:16.
+             *
+             * contain prevents zoom/cropping.
+             */
+
+            img {
+              display: block;
+
+              width: 100%;
+              height: 100%;
+
+              object-fit: contain;
+
+              object-position: center;
+
+              transform: none !important;
+
+              /*
+               * Prevent browser interpolation from
+               * creating unnecessary visual distortion.
+               */
+
+              max-width: 100%;
+              max-height: 100%;
+            }
+          }
         }
       }
     }
-    .homeBtnContainer {
+
+    /*
+     * ========================================================
+     * BUTTONS
+     * ========================================================
+     */
+
+    .captureBtnContainer,
+    .retakeBtnContainer,
+    .submitBtnContainer {
       width: 22vh;
+
       cursor: pointer;
+
+      img {
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    .retakeSubmitBtnContainer {
+      gap: 2vh;
     }
   }
 }
 
-.loader {
-  width: 5vh;
-  height: 5vh;
+/* ============================================================
+   LOADER
+   ============================================================ */
+
+.loader2 {
+  width: 2vh;
+  height: 2vh;
+
   border-radius: 50%;
+
+  background-color: #fff;
+
+  box-shadow:
+    4vh 0 #fff,
+    -4vh 0 #fff;
+
   position: relative;
-  animation: rotate 1s linear infinite;
-  //   border: 1px solid black;
-}
-.loader::before {
-  content: "";
-  box-sizing: border-box;
-  position: absolute;
-  inset: 0px;
-  border-radius: 50%;
-  border: 0.5vh solid #000;
-  animation: prixClipFix 2s linear infinite;
+
+  animation: flash 0.2s ease-out infinite alternate;
 }
 
-@keyframes rotate {
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes prixClipFix {
+@keyframes flash {
   0% {
-    clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0);
+    background-color: #fff2;
+
+    box-shadow:
+      4vh 0 #fff2,
+      -4vh 0 #fff;
   }
-  25% {
-    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 0, 100% 0, 100% 0);
-  }
+
   50% {
-    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);
+    background-color: #fff;
+
+    box-shadow:
+      4vh 0 #fff2,
+      -4vh 0 #fff2;
   }
-  75% {
-    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 100%);
-  }
+
   100% {
-    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 0 100%, 0 0);
+    background-color: #fff2;
+
+    box-shadow:
+      4vh 0 #fff,
+      -4vh 0 #fff2;
   }
 }
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+
+@keyframes countdownPop {
+  0% {
+    opacity: 0;
+
+    transform: scale(1.7);
+  }
+
+  20% {
+    opacity: 1;
+
+    transform: scale(0.95);
+  }
+
+  45% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform: scale(1);
+  }
+}
+
+@keyframes countdownRing {
+  0% {
+    opacity: 0.9;
+
+    transform: scale(0.7);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform: scale(1.5);
+  }
+}
+
+@keyframes countdownTextFade {
+  0% {
+    opacity: 0;
+
+    transform: translateY(10px);
+  }
+
+  40% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================
+   DESKTOP
+   ============================================================ */
 
 @media all and (min-width: 1100px) {
   .mainContainer {
-    // border: 1px solid black;
     height: 80% !important;
+
     top: 17% !important;
-  }
-  .qrContainer {
-    border-radius: 1vw !important;
+
+    .wrapper {
+      gap: 5vh !important;
+    }
+
+    .editorContainer {
+      top: -8.5% !important;
+
+      svg {
+        font-size: 3vh !important;
+      }
+    }
+
+    .cameraContainer {
+      width: 35vh !important;
+
+      height: 45vh !important;
+
+      border-radius: 1vw !important;
+    }
+
+    .countdownNumber {
+      width: 10vh;
+      height: 10vh;
+
+      font-size: 6vh;
+    }
+
+    .countdownText {
+      font-size: 1.2vh;
+    }
   }
 }
