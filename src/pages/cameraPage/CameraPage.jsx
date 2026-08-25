@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Draggable from "react-draggable";
 import "./cameraPage.scss";
 import Webcam from "react-webcam";
@@ -21,8 +21,6 @@ import submitBtn from "./../../assets/cameraPage/submitBtn.png";
 import frame from "./../../assets/cameraPage/frame.png";
 import bg from "./../../assets/bg.webp";
 
-import getScreenshot from "../../utils/getScreenshot";
-
 export default function CameraPage({
   capturedImg,
   setCapturedImg,
@@ -41,6 +39,9 @@ export default function CameraPage({
   const screenshotRef = useRef(null);
   const modelRef = useRef(null);
 
+  // Hidden canvas used ONLY for capturing the real video frame
+  const captureCanvasRef = useRef(null);
+
   const navigate = useNavigate();
 
   const [isCaptured, setIsCaptured] = useState(false);
@@ -50,6 +51,51 @@ export default function CameraPage({
   const [counting, setCounting] = useState(5);
 
   const [isOpenEditor, setIsOpenEditor] = useState(false);
+
+  const [isCameraReady, setIsCameraReady] = useState(false);
+
+  /*
+   * ---------------------------------------------------------
+   * OUTPUT SIZE
+   * ---------------------------------------------------------
+   *
+   * Final image:
+   *
+   * 1080 x 1620
+   *
+   * Ratio:
+   *
+   * 2 : 3
+   *
+   */
+
+  const TARGET_WIDTH = 1080;
+  const TARGET_HEIGHT = 1620;
+
+  /*
+   * ---------------------------------------------------------
+   * CAMERA
+   * ---------------------------------------------------------
+   */
+
+  const handleCameraReady = useCallback(() => {
+    const video = webcamRef.current?.video;
+
+    if (!video) {
+      console.warn("Camera video element not found.");
+      return;
+    }
+
+    console.log("Camera ready:", video.videoWidth, "x", video.videoHeight);
+
+    setIsCameraReady(true);
+  }, []);
+
+  const handleCameraError = useCallback((error) => {
+    console.error("Camera error:", error);
+
+    setIsCameraReady(false);
+  }, []);
 
   /*
    * ---------------------------------------------------------
@@ -71,7 +117,6 @@ export default function CameraPage({
      *
      * IMPORTANT:
      * We don't update dx/dy during render.
-     * This only runs after dragging has finished.
      */
 
     if (!modelRef.current) return;
@@ -103,7 +148,207 @@ export default function CameraPage({
 
   /*
    * ---------------------------------------------------------
-   * CAPTURE BUTTON
+   * GET 2:3 CROP
+   * ---------------------------------------------------------
+   *
+   * We take the actual camera video dimensions and
+   * center-crop them to 2:3.
+   *
+   * No stretching.
+   *
+   */
+
+  const getCropDimensions = useCallback((inputWidth, inputHeight) => {
+    if (!inputWidth || !inputHeight) {
+      return {
+        srcX: 0,
+        srcY: 0,
+        srcW: inputWidth,
+        srcH: inputHeight,
+      };
+    }
+
+    const inputRatio = inputWidth / inputHeight;
+    const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
+
+    let srcX = 0;
+    let srcY = 0;
+    let srcW = inputWidth;
+    let srcH = inputHeight;
+
+    if (inputRatio > targetRatio) {
+      /*
+       * Camera is wider than 2:3.
+       *
+       * Crop left + right.
+       */
+
+      srcW = inputHeight * targetRatio;
+
+      srcX = (inputWidth - srcW) / 2;
+    } else {
+      /*
+       * Camera is taller than 2:3.
+       *
+       * Crop top + bottom.
+       */
+
+      srcH = inputWidth / targetRatio;
+
+      srcY = (inputHeight - srcH) / 2;
+    }
+
+    return {
+      srcX,
+      srcY,
+      srcW,
+      srcH,
+    };
+  }, []);
+
+  /*
+   * ---------------------------------------------------------
+   * CAPTURE ACTUAL VIDEO FRAME
+   * ---------------------------------------------------------
+   *
+   * IMPORTANT:
+   *
+   * We DO NOT use:
+   *
+   * webcam.getScreenshot()
+   *
+   * We DO NOT use:
+   *
+   * getScreenshot()
+   *
+   * We DO NOT capture the DOM.
+   *
+   * We DO NOT capture a screenshot of the webcam element.
+   *
+   * Instead:
+   *
+   * Camera
+   *    ↓
+   * HTML VIDEO
+   *    ↓
+   * Canvas
+   *    ↓
+   * PNG
+   *
+   */
+
+  const captureVideoFrame = useCallback(() => {
+    const video = webcamRef.current?.video;
+
+    if (!video) {
+      console.error("Video element is not available.");
+      return null;
+    }
+
+    if (video.readyState < 2) {
+      console.error("Video is not ready.");
+      return null;
+    }
+
+    if (!video.videoWidth || !video.videoHeight) {
+      console.error("Video dimensions are not available.");
+
+      return null;
+    }
+
+    console.log(
+      "Capturing video frame:",
+      video.videoWidth,
+      "x",
+      video.videoHeight,
+    );
+
+    /*
+     * Create/reuse capture canvas.
+     */
+
+    let canvas = captureCanvasRef.current;
+
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+
+      captureCanvasRef.current = canvas;
+    }
+
+    /*
+     * Final PNG size.
+     */
+
+    canvas.width = TARGET_WIDTH;
+    canvas.height = TARGET_HEIGHT;
+
+    const ctx = canvas.getContext("2d", {
+      alpha: false,
+    });
+
+    if (!ctx) {
+      console.error("Could not create canvas context.");
+
+      return null;
+    }
+
+    /*
+     * High quality scaling.
+     */
+
+    ctx.imageSmoothingEnabled = true;
+
+    ctx.imageSmoothingQuality = "high";
+
+    /*
+     * Calculate 2:3 crop.
+     */
+
+    const { srcX, srcY, srcW, srcH } = getCropDimensions(
+      video.videoWidth,
+      video.videoHeight,
+    );
+
+    /*
+     * Clear canvas.
+     */
+
+    ctx.clearRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
+
+    /*
+     * Draw CURRENT VIDEO FRAME.
+     *
+     * This is the important part.
+     */
+
+    ctx.drawImage(
+      video,
+
+      srcX,
+      srcY,
+      srcW,
+      srcH,
+
+      0,
+      0,
+      TARGET_WIDTH,
+      TARGET_HEIGHT,
+    );
+
+    /*
+     * Export LOSSLESS PNG.
+     */
+
+    const pngData = canvas.toDataURL("image/png");
+
+    console.log("Captured PNG:", TARGET_WIDTH, "x", TARGET_HEIGHT);
+
+    return pngData;
+  }, [getCropDimensions]);
+
+  /*
+   * ---------------------------------------------------------
+   * CAPTURE IMAGE
    * ---------------------------------------------------------
    */
 
@@ -117,10 +362,21 @@ export default function CameraPage({
     }
 
     /*
+     * Make sure camera is ready.
+     */
+
+    if (!isCameraReady) {
+      console.warn("Camera is not ready yet.");
+
+      return;
+    }
+
+    /*
      * Start from 5.
      */
 
     setCounting(5);
+
     setIsCounting(true);
   };
 
@@ -135,9 +391,15 @@ export default function CameraPage({
 
     setCapturedImg("");
 
+    if (setCapturedImgWithFrame) {
+      setCapturedImgWithFrame("");
+    }
+
     setCounting(5);
 
     setIsCounting(false);
+
+    setIsCameraReady(false);
   };
 
   /*
@@ -147,7 +409,7 @@ export default function CameraPage({
    */
 
   const submitImg = () => {
-    if (isCaptured) {
+    if (isCaptured && capturedImg) {
       navigate("/output");
     }
   };
@@ -204,15 +466,6 @@ export default function CameraPage({
    *
    * 5 → 4 → 3 → 2 → 1 → CAPTURE
    *
-   * IMPORTANT:
-   *
-   * We NEVER call another setState() from inside
-   * setCounting().
-   *
-   * This removes:
-   *
-   * "Cannot update a component (App) while rendering
-   * a different component (CameraPage)"
    */
 
   useEffect(() => {
@@ -244,7 +497,7 @@ export default function CameraPage({
      *
      * Keep "1" visible for one second.
      *
-     * Then capture.
+     * Then capture the actual video frame.
      */
 
     if (counting === 1) {
@@ -257,56 +510,54 @@ export default function CameraPage({
 
         /*
          * ---------------------------------------------------
-         * CAPTURE WITHOUT FRAME
+         * CAPTURE ACTUAL VIDEO FRAME
          * ---------------------------------------------------
          */
 
-        getScreenshot(
-          {
-            webcam: webcamRef.current,
-            model: modelRef.current,
-            container: screenshotRef.current,
-            type: "withoutFrame",
-          },
-          (base64Data) => {
-            /*
-             * These state updates happen inside the
-             * asynchronous screenshot callback.
-             *
-             * They are NOT inside setCounting().
-             */
+        const base64Data = captureVideoFrame();
 
-            setCapturedImg(base64Data);
+        if (!base64Data) {
+          console.error("Failed to capture video frame.");
 
-            setIsCaptured(true);
-          },
-        );
+          return;
+        }
 
         /*
-         * ---------------------------------------------------
-         * CAPTURE WITH FRAME
-         * ---------------------------------------------------
+         * Save RAW camera PNG.
          */
 
-        getScreenshot(
-          {
-            webcam: webcamRef.current,
-            model: modelRef.current,
-            container: screenshotRef.current,
-            frame: frame,
-            type: "withFrame",
-          },
-          (base64Data) => {
-            setCapturedImgWithFrame(base64Data);
-          },
-        );
+        setCapturedImg(base64Data);
+
+        /*
+         * If your output page expects
+         * capturedImgWithFrame, use the same
+         * high-resolution PNG for now.
+         *
+         * This does NOT screenshot the DOM.
+         */
+
+        if (setCapturedImgWithFrame) {
+          setCapturedImgWithFrame(base64Data);
+        }
+
+        /*
+         * Show captured state.
+         */
+
+        setIsCaptured(true);
       }, 1000);
 
       return () => {
         clearTimeout(timer);
       };
     }
-  }, [isCounting, counting, setCapturedImg, setCapturedImgWithFrame]);
+  }, [
+    isCounting,
+    counting,
+    captureVideoFrame,
+    setCapturedImg,
+    setCapturedImgWithFrame,
+  ]);
 
   /*
    * ---------------------------------------------------------
@@ -481,20 +732,36 @@ export default function CameraPage({
                   ref={screenshotRef}
                   className="webcamWithModel flex-row-center"
                 >
-                  {/* WEBCAM */}
+                  {/* -------------------------------------------
+                      REAL BACK CAMERA
+                  -------------------------------------------- */}
 
                   <Webcam
-                    ref={camRef}
+                    ref={webcamRef}
                     id="webcam"
                     audio={false}
+                    /*
+                     * IMPORTANT:
+                     * Back camera.
+                     */
+
                     mirrored={false}
                     videoConstraints={{
                       facingMode: {
                         exact: "environment",
                       },
+
+                      /*
+                       * Request high resolution.
+                       *
+                       * Actual resolution depends on
+                       * the device/browser.
+                       */
+
                       width: {
                         ideal: 2160,
                       },
+
                       height: {
                         ideal: 3240,
                       },
@@ -503,14 +770,59 @@ export default function CameraPage({
                     onUserMediaError={handleCameraError}
                     style={{
                       gridArea: "1 / 1",
+
                       width: "100%",
                       height: "100%",
+
+                      /*
+                       * Keep camera aspect visually
+                       * consistent with container.
+                       */
+
                       objectFit: "cover",
+
+                      /*
+                       * Absolutely NO MIRROR.
+                       */
+
+                      transform: "scaleX(1)",
+
                       display: "block",
                     }}
                   />
 
-                  {/* COUNTDOWN */}
+                  {/* -------------------------------------------
+                      CAMERA LOADING
+                  -------------------------------------------- */}
+
+                  {!isCameraReady && (
+                    <div
+                      style={{
+                        gridArea: "1 / 1",
+
+                        width: "100%",
+                        height: "100%",
+
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+
+                        background: "rgba(0,0,0,0.75)",
+
+                        color: "#fff",
+
+                        zIndex: 5,
+
+                        fontSize: "18px",
+                      }}
+                    >
+                      Starting Camera...
+                    </div>
+                  )}
+
+                  {/* -------------------------------------------
+                      COUNTDOWN
+                  -------------------------------------------- */}
 
                   {isCounting && counting > 0 && (
                     <div className="countdownOverlay">
@@ -522,7 +834,9 @@ export default function CameraPage({
                     </div>
                   )}
 
-                  {/* MODEL */}
+                  {/* -------------------------------------------
+                      MODEL
+                  -------------------------------------------- */}
 
                   <Draggable
                     nodeRef={modelRef}
@@ -593,6 +907,9 @@ export default function CameraPage({
           </div>
         )}
       </div>
+
+      {/* Hidden canvas reference is intentionally not rendered.
+          It is created when captureVideoFrame() runs. */}
     </div>
   );
 }
