@@ -3,6 +3,7 @@ import Draggable from "react-draggable";
 import "./cameraPage.scss";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
+import { MdCameraswitch } from "react-icons/md";
 
 import {
   MdArrowLeft,
@@ -48,6 +49,21 @@ export default function CameraPage({
   const [counting, setCounting] = useState(5);
   const [isOpenEditor, setIsOpenEditor] = useState(false);
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState("environment");
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
+
+  const switchCamera = () => {
+    if (isCounting || isSwitchingCamera) {
+      return;
+    }
+
+    setIsSwitchingCamera(true);
+    setIsCameraReady(false);
+
+    setCameraFacingMode((previous) =>
+      previous === "environment" ? "user" : "environment",
+    );
+  };
 
   /*
    * =========================================================
@@ -773,13 +789,14 @@ export default function CameraPage({
                   {/* BACK CAMERA */}
 
                   <Webcam
+                    key={cameraFacingMode}
                     ref={webcamRef}
                     id="webcam"
                     audio={false}
-                    mirrored={false}
+                    mirrored={cameraFacingMode === "user"}
                     videoConstraints={{
                       facingMode: {
-                        ideal: "environment",
+                        ideal: cameraFacingMode,
                       },
                       width: {
                         ideal: 2160,
@@ -788,8 +805,14 @@ export default function CameraPage({
                         ideal: 3240,
                       },
                     }}
-                    onUserMedia={handleCameraReady}
-                    onUserMediaError={handleCameraError}
+                    onUserMedia={() => {
+                      handleCameraReady();
+                      setIsSwitchingCamera(false);
+                    }}
+                    onUserMediaError={(error) => {
+                      handleCameraError(error);
+                      setIsSwitchingCamera(false);
+                    }}
                     style={{
                       position: "absolute",
                       top: 0,
@@ -889,6 +912,17 @@ export default function CameraPage({
                   </div>
                 </>
               )}
+
+              {/* CAMERA SWITCH */}
+              <button
+                type="button"
+                onClick={switchCamera}
+                disabled={isCounting || isSwitchingCamera}
+                className="cameraSwitchBtn"
+                aria-label="Switch camera"
+              >
+                <MdCameraswitch />
+              </button>
 
               {/* CAPTURED IMAGE */}
 
