@@ -784,24 +784,14 @@ export default function CameraPage({
                     ref={webcamRef}
                     id="webcam"
                     audio={false}
-                    /*
-                     * FRONT:
-                     * mirrored preview
-                     *
-                     * BACK:
-                     * normal preview
-                     */
-
-                    mirrored={cameraFacingMode === "user"}
+                    mirrored={false}
                     videoConstraints={{
                       facingMode: {
                         ideal: cameraFacingMode,
                       },
-
                       width: {
                         ideal: 2160,
                       },
-
                       height: {
                         ideal: 3240,
                       },
@@ -812,30 +802,26 @@ export default function CameraPage({
                     }}
                     onUserMediaError={(error) => {
                       handleCameraError(error);
-
                       setIsSwitchingCamera(false);
                     }}
                     style={{
                       position: "absolute",
                       top: 0,
                       left: 0,
-
                       width: "100%",
                       height: "100%",
-
                       objectFit: "cover",
-
                       zIndex: 1,
-
                       display: "block",
 
                       /*
-                       * IMPORTANT:
-                       *
-                       * No CSS mirror here.
+                       * FRONT = mirror
+                       * BACK = normal
                        */
-
-                      transform: "none",
+                      transform:
+                        cameraFacingMode === "user"
+                          ? "scaleX(-1)"
+                          : "scaleX(1)",
                     }}
                   />
 
