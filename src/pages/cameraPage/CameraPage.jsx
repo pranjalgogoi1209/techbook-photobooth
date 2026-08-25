@@ -338,17 +338,42 @@ export default function CameraPage({
 
     ctx.clearRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
-    ctx.drawImage(
-      video,
-      srcX,
-      srcY,
-      srcW,
-      srcH,
-      0,
-      0,
-      TARGET_WIDTH,
-      TARGET_HEIGHT,
-    );
+    if (cameraFacingMode === "user") {
+      // FRONT CAMERA:
+      // Preview is mirrored, so mirror the canvas too.
+      ctx.save();
+
+      ctx.translate(TARGET_WIDTH, 0);
+      ctx.scale(-1, 1);
+
+      ctx.drawImage(
+        video,
+        srcX,
+        srcY,
+        srcW,
+        srcH,
+        0,
+        0,
+        TARGET_WIDTH,
+        TARGET_HEIGHT,
+      );
+
+      ctx.restore();
+    } else {
+      // BACK CAMERA:
+      // Never mirror.
+      ctx.drawImage(
+        video,
+        srcX,
+        srcY,
+        srcW,
+        srcH,
+        0,
+        0,
+        TARGET_WIDTH,
+        TARGET_HEIGHT,
+      );
+    }
 
     /*
      * -------------------------------------------------------
