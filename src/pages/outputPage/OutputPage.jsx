@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import QRCode from "react-qr-code";
 import { uploadImage } from "../../utils/uploadFirebase";
 
-import outputPageBg from "./../../assets/cameraPage/cameraPageBg.png";
+import bg from "./../../assets/bg.webp";
 import logo from "./../../assets/logo.png";
 import homeBtn from "./../../assets/homePage/homeBtn.png";
 import qrFrame from "./../../assets/outputPage/qrFrame.png";
@@ -29,10 +29,7 @@ function OutputPage({ url, setUrl, capturedImgWithFrame, isHorizontalScreen }) {
     <div className="OutputPage flex-col-center">
       {/* bg */}
       <div className="outputBgContainer">
-        <img
-          src={isHorizontalScreen ? cameraPageLaptopBg : outputPageBg}
-          alt="bg"
-        />
+        <img src={isHorizontalScreen ? bg : bg} alt="bg" />
       </div>
 
       {/* qr code container */}

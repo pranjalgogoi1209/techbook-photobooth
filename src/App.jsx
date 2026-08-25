@@ -1,55 +1,104 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import HomePage from "./pages/homePage/HomePage";
 import CameraPage from "./pages/cameraPage/CameraPage";
 import OutputPage from "./pages/outputPage/OutputPage";
-import { deleteDoc, doc, onSnapshot } from "firebase/firestore";
+
+import { onSnapshot } from "firebase/firestore";
 import { collection } from "firebase/firestore";
 import { db } from "./firebase";
 
 function App() {
   const [url, setUrl] = useState();
+
   const [capturedImg, setCapturedImg] = useState("");
+
   const [capturedImgWithFrame, setCapturedImgWithFrame] = useState(null);
+
   const [isHorizontalScreen, setIsHorizontalScreen] = useState(false);
-  const [dx, setDx] = useState(0);
-  const [dy, setDy] = useState(0);
-  const [size, setSize] = useState(16);
+
+  /*
+   * Model position
+   */
+  const [dx, setDx] = useState(80);
+  const [dy, setDy] = useState(50);
+
+  /*
+   * Model size
+   */
+  const [size, setSize] = useState(25);
+
+  /*
+   * ---------------------------------------------------------
+   * SCREEN SIZE
+   * ---------------------------------------------------------
+   *
+   * IMPORTANT:
+   *
+   * Do not put isHorizontalScreen in the dependency array.
+   * Otherwise this effect updates the same state that
+   * triggers the effect.
+   */
 
   useEffect(() => {
-    if (window.innerWidth >= 1100) {
-      setIsHorizontalScreen(true);
-    } else {
-      setIsHorizontalScreen(false);
-    }
-  }, [isHorizontalScreen]);
+    const checkScreenSize = () => {
+      setIsHorizontalScreen(window.innerWidth >= 1100);
+    };
 
-  console.log(isHorizontalScreen);
+    checkScreenSize();
+
+    /*
+     * Optional but recommended:
+     * update if the browser is resized.
+     */
+    window.addEventListener("resize", checkScreenSize);
+
+    return () => {
+      window.removeEventListener("resize", checkScreenSize);
+    };
+  }, []);
+
+  /*
+   * ---------------------------------------------------------
+   * FIREBASE QR URL LISTENER
+   * ---------------------------------------------------------
+   */
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "techbook_qr_urls"),
       // collection(db, "Techbook_Photo_Booth_testing"),
+
       (snapshot) => {
         try {
           let alldata = snapshot.docs.map((doc) => ({
             ...doc.data(),
             id: doc.id,
           }));
+
           alldata = alldata.sort((a, b) => b.createdAt - a.createdAt);
+
           console.log(alldata);
         } catch (error) {
           console.log(error);
         }
-      }
+      },
     );
 
     return () => unsubscribe();
   }, []);
 
+  /*
+   * ---------------------------------------------------------
+   * ROUTES
+   * ---------------------------------------------------------
+   */
+
   return (
     <BrowserRouter>
       <Routes>
+        {/* HOME */}
         <Route
           path="/"
           element={
@@ -61,6 +110,8 @@ function App() {
             />
           }
         />
+
+        {/* CAMERA */}
         <Route
           path="/camera"
           element={
@@ -69,15 +120,23 @@ function App() {
               isHorizontalScreen={isHorizontalScreen}
               setCapturedImg={setCapturedImg}
               setCapturedImgWithFrame={setCapturedImgWithFrame}
+              /*
+               * Model position
+               */
               dx={dx}
               dy={dy}
               setDx={setDx}
               setDy={setDy}
+              /*
+               * Model size
+               */
               size={size}
               setSize={setSize}
             />
           }
         />
+
+        {/* OUTPUT */}
         <Route
           path="/output"
           element={

@@ -3,6 +3,7 @@ import Draggable from "react-draggable";
 import "./cameraPage.scss";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
+
 import {
   MdArrowLeft,
   MdArrowRight,
@@ -10,140 +11,169 @@ import {
   MdOutlineArrowDropDown,
   MdOutlineDone,
 } from "react-icons/md";
+
 import { GoPlus } from "react-icons/go";
 import { AiOutlineMinus } from "react-icons/ai";
-import { IoCheckmarkDoneSharp } from "react-icons/io5";
-
-// import Model3d from "../../components/model3d/Model3d";
-import getScreenshot from "../../utils/getScreenshot";
 
 import captureBtn from "./../../assets/cameraPage/captureBtn.png";
 import retakeBtn from "./../../assets/cameraPage/retakeBtn.png";
 import submitBtn from "./../../assets/cameraPage/submitBtn.png";
 import frame from "./../../assets/cameraPage/frame.png";
-import cameraPageBg from "./../../assets/cameraPage/cameraPageBg.png";
-import logo from "./../../assets/logo.png";
-import cameraPageLaptopBg from "./../../assets/cameraPage/cameraPageLaptopBg.png";
-import { element } from "three/webgpu";
+import bg from "./../../assets/bg.webp";
+
+import getScreenshot from "../../utils/getScreenshot";
 
 export default function CameraPage({
   capturedImg,
   setCapturedImg,
   setCapturedImgWithFrame,
   isHorizontalScreen,
+
   dx,
   dy,
   setDx,
   setDy,
+
   size,
   setSize,
 }) {
-  const screenshotRef = useRef();
-  const screenshotWithFrameRef = useRef();
+  const webcamRef = useRef(null);
+  const screenshotRef = useRef(null);
+  const modelRef = useRef(null);
+
   const navigate = useNavigate();
+
   const [isCaptured, setIsCaptured] = useState(false);
-  const [postion, setPosition] = useState({
-    top: 8,
-    left: 0,
-  });
+
   const [isCounting, setIsCounting] = useState(false);
+
   const [counting, setCounting] = useState(5);
+
   const [isOpenEditor, setIsOpenEditor] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  // const [webcamWithModel, setWebcamWithModel] = useState("");
 
-  // will work on this code
-  useEffect(() => {
-    const modelElement = screenshotRef.current.querySelector(".modelContainer");
-    console.log("working", dx, dy);
+  /*
+   * ---------------------------------------------------------
+   * DRAGGING
+   * ---------------------------------------------------------
+   */
 
-    if (modelElement) {
-      let currentTransform = modelElement.style.transform;
-      let translateValues = currentTransform.match(
-        /translate\(([^,]+),\s*([^)]+)\)/
-      );
-      if (translateValues) {
-        setDx(parseFloat(translateValues[1]));
-        setDy(parseFloat(translateValues[2]));
-      }
-    }
-  }, [isDragging]);
-
-  console.log(postion);
-  /*   useEffect(() => {
-    if (screenshotRef?.current) {
-      setWebcamWithModel(screenshotRef.current);
-    }
-  }, []);
-
-  console.log(webcamWithModel); */
-
-  // Start tracking drag status
   const handleStart = () => {
-    setIsDragging(false);
+    // Nothing needed here.
   };
 
-  // If the element is being dragged, we set dragging to true
   const handleDrag = () => {
-    setIsDragging(true);
+    // Nothing needed here.
   };
 
-  // Handle the stop event
   const handleStop = () => {
-    setIsDragging(false);
+    /*
+     * Save model position after dragging.
+     *
+     * IMPORTANT:
+     * We don't update dx/dy during render.
+     * This only runs after dragging has finished.
+     */
+
+    if (!modelRef.current) return;
+
+    const transform = modelRef.current.style.transform;
+
+    const match = transform.match(
+      /translate(?:3d)?\(\s*([-0-9.]+)px,\s*([-0-9.]+)px/,
+    );
+
+    if (match) {
+      const newDx = parseFloat(match[1]);
+      const newDy = parseFloat(match[2]);
+
+      setDx(newDx);
+      setDy(newDy);
+    }
   };
 
-  // handle editor
+  /*
+   * ---------------------------------------------------------
+   * EDITOR
+   * ---------------------------------------------------------
+   */
+
   const handleEditor = () => {
     setIsOpenEditor(true);
-    console.log("handle editor opening");
   };
 
+  /*
+   * ---------------------------------------------------------
+   * CAPTURE BUTTON
+   * ---------------------------------------------------------
+   */
+
   const captureImg = () => {
-    setIsCounting(true);
+    /*
+     * Prevent multiple clicks.
+     */
+
+    if (isCounting || isCaptured) {
+      return;
+    }
+
+    /*
+     * Start from 5.
+     */
+
     setCounting(5);
+    setIsCounting(true);
   };
+
+  /*
+   * ---------------------------------------------------------
+   * RETAKE
+   * ---------------------------------------------------------
+   */
 
   const retakeImg = () => {
     setIsCaptured(false);
+
     setCapturedImg("");
+
     setCounting(5);
+
+    setIsCounting(false);
   };
 
-  const submitImg = async () => {
+  /*
+   * ---------------------------------------------------------
+   * SUBMIT
+   * ---------------------------------------------------------
+   */
+
+  const submitImg = () => {
     if (isCaptured) {
       navigate("/output");
     }
   };
 
+  /*
+   * ---------------------------------------------------------
+   * MOVE MODEL
+   * ---------------------------------------------------------
+   */
+
   const handleMoving = (value) => {
     switch (value) {
       case "up":
-        setPosition((prev) => ({
-          ...prev,
-          top: prev.top - 0.5,
-        }));
+        setDy((prev) => prev - 0.5);
         break;
 
       case "down":
-        setPosition((prev) => ({
-          ...prev,
-          top: prev.top + 0.5,
-        }));
+        setDy((prev) => prev + 0.5);
         break;
 
       case "left":
-        setPosition((prev) => ({
-          ...prev,
-          left: prev.left - 0.5,
-        }));
+        setDx((prev) => prev - 0.5);
         break;
 
       case "right":
-        setPosition((prev) => ({
-          ...prev,
-          left: prev.left + 0.5,
-        }));
+        setDx((prev) => prev + 0.5);
         break;
 
       default:
@@ -151,77 +181,178 @@ export default function CameraPage({
     }
   };
 
-  // resizing
+  /*
+   * ---------------------------------------------------------
+   * RESIZE MODEL
+   * ---------------------------------------------------------
+   */
+
   const handleResizing = (value) => {
-    if (value == "inc") {
-      console.log("increasing");
+    if (value === "inc") {
       setSize((prev) => prev + 0.5);
-    } else if (value == "dec") {
-      console.log("decre");
-      setSize((prev) => prev - 0.5);
+    }
+
+    if (value === "dec") {
+      setSize((prev) => Math.max(5, prev - 0.5));
     }
   };
 
-  // countdown and screenshot logic
+  /*
+   * ---------------------------------------------------------
+   * COUNTDOWN
+   * ---------------------------------------------------------
+   *
+   * 5 → 4 → 3 → 2 → 1 → CAPTURE
+   *
+   * IMPORTANT:
+   *
+   * We NEVER call another setState() from inside
+   * setCounting().
+   *
+   * This removes:
+   *
+   * "Cannot update a component (App) while rendering
+   * a different component (CameraPage)"
+   */
+
   useEffect(() => {
-    let countdownInterval;
-
-    if (isCounting && counting > 0) {
-      countdownInterval = setInterval(() => {
-        setCounting((prevCountdown) => prevCountdown - 1);
-      }, 1000);
-    } else if (isCounting && counting === 0) {
-      setIsCounting(false); // Stop counting
-
-      // Capture the screenshot with the frame first
-      getScreenshot(
-        {
-          element: screenshotWithFrameRef.current,
-          type: "withFrame",
-          isHorizontalScreen,
-        },
-        (base64Data) => {
-          console.log("Screenshot with frame:", base64Data);
-          setCapturedImgWithFrame(base64Data);
-        }
-      );
-
-      setIsCaptured(true); // Update isCaptured
-
-      // Capture the screenshot without the frame afterward
-      getScreenshot(
-        { element: screenshotRef.current, type: "withoutFrame" }, // Pass screenshotRef here
-        (base64Data) => {
-          console.log("Screenshot without frame:", base64Data);
-          setCapturedImg(base64Data);
-        }
-      );
+    if (!isCounting) {
+      return;
     }
 
-    return () => clearInterval(countdownInterval); // Cleanup interval on unmount or re-run
-  }, [isCounting, counting]);
+    /*
+     * 5 → 4
+     * 4 → 3
+     * 3 → 2
+     * 2 → 1
+     */
 
-  // keyboard events
+    if (counting > 1) {
+      const timer = setTimeout(() => {
+        setCounting((previous) => previous - 1);
+      }, 1000);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+
+    /*
+     * -------------------------------------------------------
+     * COUNTING === 1
+     * -------------------------------------------------------
+     *
+     * Keep "1" visible for one second.
+     *
+     * Then capture.
+     */
+
+    if (counting === 1) {
+      const timer = setTimeout(() => {
+        /*
+         * Stop countdown first.
+         */
+
+        setIsCounting(false);
+
+        /*
+         * ---------------------------------------------------
+         * CAPTURE WITHOUT FRAME
+         * ---------------------------------------------------
+         */
+
+        getScreenshot(
+          {
+            webcam: webcamRef.current,
+            model: modelRef.current,
+            container: screenshotRef.current,
+            type: "withoutFrame",
+          },
+          (base64Data) => {
+            /*
+             * These state updates happen inside the
+             * asynchronous screenshot callback.
+             *
+             * They are NOT inside setCounting().
+             */
+
+            setCapturedImg(base64Data);
+
+            setIsCaptured(true);
+          },
+        );
+
+        /*
+         * ---------------------------------------------------
+         * CAPTURE WITH FRAME
+         * ---------------------------------------------------
+         */
+
+        getScreenshot(
+          {
+            webcam: webcamRef.current,
+            model: modelRef.current,
+            container: screenshotRef.current,
+            frame: frame,
+            type: "withFrame",
+          },
+          (base64Data) => {
+            setCapturedImgWithFrame(base64Data);
+          },
+        );
+      }, 1000);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [isCounting, counting, setCapturedImg, setCapturedImgWithFrame]);
+
+  /*
+   * ---------------------------------------------------------
+   * KEYBOARD CONTROLS
+   * ---------------------------------------------------------
+   */
+
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowUp") {
-        handleMoving("up");
-        console.log("up arrow");
-      } else if (e.key === "ArrowDown") {
-        console.log("down arrow");
-        handleMoving("down");
-      } else if (e.key === "ArrowLeft") {
-        console.log("left arrow");
-        handleMoving("left");
-      } else if (e.key === "ArrowRight") {
-        console.log("right arrow");
-        handleMoving("right");
-      } else if (e.key == "+") {
-        console.log("plus button");
-        handleResizing("inc");
-      } else if (e.key == "-") {
-        handleResizing("dec");
-        console.log("minus button");
+    const handleKeyDown = (event) => {
+      /*
+       * Don't allow model editing while captured.
+       */
+
+      if (isCaptured) {
+        return;
+      }
+
+      switch (event.key) {
+        case "ArrowUp":
+          handleMoving("up");
+          break;
+
+        case "ArrowDown":
+          handleMoving("down");
+          break;
+
+        case "ArrowLeft":
+          handleMoving("left");
+          break;
+
+        case "ArrowRight":
+          handleMoving("right");
+          break;
+
+        case "+":
+        case "=":
+          handleResizing("inc");
+          break;
+
+        case "-":
+        case "_":
+          handleResizing("dec");
+          break;
+
+        default:
+          break;
       }
     };
 
@@ -230,63 +361,71 @@ export default function CameraPage({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [isCaptured]);
+
+  /*
+   * ---------------------------------------------------------
+   * RENDER
+   * ---------------------------------------------------------
+   */
 
   return (
-    <div ref={screenshotWithFrameRef} className="CameraPage flex-col-center">
-      {/* bg */}
+    <div className="CameraPage flex-col-center">
+      {/* BACKGROUND */}
+
       <div className="cameraPageBgContainer flex-row-center">
-        <img
-          src={isHorizontalScreen ? cameraPageLaptopBg : cameraPageBg}
-          alt="cameraPageBg"
-        />
+        <img src={bg} alt="cameraPageBg" />
       </div>
 
-      {/* main container */}
+      {/* MAIN CONTAINER */}
+
       <div className="mainContainer flex-col-center">
         <div className="wrapper flex-col-center">
-          {/* logo */}
-          <div onClick={handleEditor} className="logoContainer flex-row-center">
-            <img src={logo} alt="logo" />
-          </div>
+          {/* CAMERA AREA */}
 
           <div className="cameraContainerWrapper flex-col-center">
-            {/* editor */}
-            {isOpenEditor && (
+            {/* EDITOR */}
+
+            {isOpenEditor && !isCaptured && (
               <div className="editorContainer flex-row-center">
-                {/* Move Left */}
-                {/*  <div
+                {/* MOVE LEFT */}
+
+                <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("left")}
                 >
                   <MdArrowLeft />
-                </div> */}
+                </div>
 
-                {/* Move Right */}
-                {/*  <div
+                {/* MOVE RIGHT */}
+
+                <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("right")}
                 >
                   <MdArrowRight />
-                </div> */}
+                </div>
 
-                {/* Move Up */}
-                {/*   <div
+                {/* MOVE UP */}
+
+                <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("up")}
                 >
                   <MdOutlineArrowDropUp />
-                </div> */}
+                </div>
 
-                {/* Move Down */}
-                {/*   <div
+                {/* MOVE DOWN */}
+
+                <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("down")}
                 >
                   <MdOutlineArrowDropDown />
-                </div> */}
+                </div>
 
-                {/* Increase Size */}
+                {/* INCREASE */}
+
                 <div
                   className="resizeBtn flex-row-center"
                   onClick={() => handleResizing("inc")}
@@ -294,7 +433,8 @@ export default function CameraPage({
                   <GoPlus />
                 </div>
 
-                {/* Decrease Size */}
+                {/* DECREASE */}
+
                 <div
                   className="resizeBtn flex-row-center"
                   onClick={() => handleResizing("dec")}
@@ -302,19 +442,27 @@ export default function CameraPage({
                   <AiOutlineMinus />
                 </div>
 
-                {/* Close Editor */}
+                {/* DONE */}
+
                 <div
-                  onClick={() => setIsOpenEditor(false)}
                   className="flex-row-center closeEditorBtn"
+                  onClick={() => setIsOpenEditor(false)}
                 >
                   <MdOutlineDone />
                 </div>
               </div>
             )}
 
-            {/* camera container */}
+            {/* CAMERA CONTAINER */}
+
             <div className="cameraContainer flex-row-center">
               {isCaptured ? (
+                /*
+                 * ------------------------------------------------
+                 * CAPTURED IMAGE
+                 * ------------------------------------------------
+                 */
+
                 <div className="capturedImgContainer flex-row-center">
                   {capturedImg ? (
                     <img src={capturedImg} alt="capturedImg" />
@@ -323,56 +471,95 @@ export default function CameraPage({
                   )}
                 </div>
               ) : (
+                /*
+                 * ------------------------------------------------
+                 * LIVE CAMERA
+                 * ------------------------------------------------
+                 */
+
                 <div
                   ref={screenshotRef}
                   className="webcamWithModel flex-row-center"
                 >
-                  {/* webcam */}
+                  {/* WEBCAM */}
+
                   <Webcam
+                    ref={webcamRef}
                     id="webcam"
+                    audio={false}
+                    screenshotFormat="image/png"
                     forceScreenshotSourceSize={true}
                     mirrored={true}
+                    videoConstraints={{
+                      facingMode: "user",
+                    }}
                   />
 
-                  {!isCaptured && isCounting && (
-                    <h1 className="countdown">{counting}</h1>
+                  {/* COUNTDOWN */}
+
+                  {isCounting && counting > 0 && (
+                    <div className="countdownOverlay">
+                      <div key={counting} className="countdownNumber">
+                        {counting}
+                      </div>
+
+                      <div className="countdownText">GET READY</div>
+                    </div>
                   )}
 
-                  {/* model */}
+                  {/* MODEL */}
+
                   <Draggable
-                    defaultPosition={{ x: dx, y: dy }}
+                    nodeRef={modelRef}
+                    defaultPosition={{
+                      x: dx || 0,
+                      y: dy || 0,
+                    }}
+                    onStart={handleStart}
                     onDrag={handleDrag}
                     onStop={handleStop}
                   >
                     <div
+                      ref={modelRef}
                       className="modelContainer flex-row-center"
                       style={{
                         width: `${size}vh`,
                       }}
                     >
-                      <img src={"/model.png"} alt="model" />
+                      <img
+                        src="/model-virat.png"
+                        alt="model"
+                        draggable={false}
+                      />
                     </div>
                   </Draggable>
                 </div>
               )}
 
-              {/* frame */}
+              {/* FRAME */}
+
               <div className="frameContainer flex-row-center">
-                <img src={frame} alt="frame" />
+                <img src={frame} alt="frame" draggable={false} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* btns */}
+        {/* BUTTONS */}
+
         {isCaptured ? (
           <div className="retakeSubmitBtnContainer flex-row-center">
+            {/* RETAKE */}
+
             <div
               onClick={retakeImg}
               className="retakeBtnContainer flex-row-center"
             >
               <img src={retakeBtn} alt="retakeBtn" />
             </div>
+
+            {/* SUBMIT */}
+
             <div
               onClick={submitImg}
               className="submitBtnContainer flex-row-center"
@@ -381,6 +568,8 @@ export default function CameraPage({
             </div>
           </div>
         ) : (
+          /* CAPTURE */
+
           <div
             onClick={captureImg}
             className="captureBtnContainer flex-row-center"

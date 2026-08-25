@@ -5,99 +5,211 @@ $color-one: #212121;
 }
 
 .CameraPage {
-  height: 100svh;
+  height: 100vh;
   position: relative;
+
   .cameraPageBgContainer {
     width: 100%;
     height: 100%;
   }
+
   .mainContainer {
-    height: 75%;
+    height: 100%;
     position: absolute;
-    inset: 0;
-    top: 20%;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
     justify-content: space-between;
+    padding: 5vh;
 
     .wrapper {
-      // border: 1px solid black;
       gap: 6.2vh;
+
       .logoContainer {
-        width: 35vh;
+        width: 20vh;
       }
 
       .cameraContainerWrapper {
-        // gap: 2vh;
         position: relative;
+
         .editorContainer {
           position: absolute;
+
           top: -10.5%;
           right: 0;
+
           border: 0.1vw solid #212121;
           background-color: #212121;
+
           gap: 0.5vw;
+
+          z-index: 20;
+
           svg {
             font-size: 4vh;
             border: 0.1vw solid #f1f1f1;
             color: #fff;
           }
+
           .closeEditorBtn {
             svg {
               color: greenyellow;
             }
           }
         }
-        .cameraContainer {
-          position: relative;
-          width: 30vh;
-          height: 40vh;
-          /*  outline: 2.5vw solid $color-one;
-          outline-offset: -2.5vw; */
-          // border: 2.5vw solid $color-one;
-          // border: 11px solid red;
-          border-radius: 2vw;
-          overflow: hidden;
-          .webcamWithModel {
-            width: 100%;
 
+        .cameraContainer {
+          background-color: #212121;
+          position: relative;
+
+          width: 45vh;
+          height: 80vh;
+
+          border-radius: 5vw;
+
+          overflow: hidden !important;
+
+          .webcamWithModel {
+            position: relative;
+
+            width: 100%;
             height: 100%;
+
             overflow: hidden;
+
+            /*
+             * IMPORTANT
+             *
+             * Do NOT mirror this parent.
+             */
+
+            transform: none !important;
+
             #webcam {
+              position: absolute;
+
               width: auto;
               height: 100%;
+
+              max-width: none;
+
               object-fit: cover;
+
+              /*
+               * Webcam preview is mirrored.
+               *
+               * Only the video is flipped.
+               */
+
+              transform: scaleX(-1);
+
+              transform-origin: center;
             }
+
             .modelContainer {
-              // border: 5px solid red;
               position: absolute;
+
               height: auto;
-              // background-color: red;
-              transform: translate(-147.5px, 62.5px);
-            }
-            .countdown {
-              position: absolute;
-              top: 37%;
-              left: 45%;
-              color: $color-one;
-              font-size: 8.5vw;
-              font-weight: 600;
-              z-index: 2;
+
+              z-index: 3;
+
+              /*
+               * NEVER put scaleX(-1) here.
+               */
+
+              transform-origin: center;
+
+              img {
+                width: 100%;
+                height: auto;
+
+                display: block;
+
+                user-select: none;
+                -webkit-user-drag: none;
+
+                /*
+                 * Model stays normal.
+                 */
+
+                transform: none !important;
+              }
             }
           }
-          .frameContainer,
+
+          /*
+           * FRAME
+           */
+
+          .frameContainer {
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            z-index: 10;
+
+            pointer-events: none;
+
+            transform: none !important;
+
+            img {
+              width: 100%;
+              height: 100%;
+
+              object-fit: fill;
+
+              transform: none !important;
+
+              pointer-events: none;
+            }
+          }
+
+          /*
+           * CAPTURED IMAGE
+           */
+
           .capturedImgContainer {
             position: absolute;
+
             inset: 0;
-            width: 100.2%;
+
+            width: 100%;
             height: 100%;
-          }
-          .frameContainer {
-            pointer-events: none;
-          }
-          .capturedImgContainer {
+
             background-color: $color-one;
-            /*          outline: 2.5vw solid $color-one;
-            outline-offset: -2.5vw; */
-            transform: scaleX(-1);
+
+            z-index: 5;
+
+            /*
+             * VERY IMPORTANT:
+             *
+             * There is NO scaleX(-1) here.
+             */
+
+            transform: none !important;
+
+            overflow: hidden;
+
+            img {
+              width: 100%;
+              height: 100%;
+
+              display: block;
+
+              object-fit: cover;
+
+              /*
+               * Never flip captured image.
+               */
+
+              transform: none !important;
+            }
           }
         }
       }
@@ -107,7 +219,13 @@ $color-one: #212121;
     .retakeBtnContainer,
     .submitBtnContainer {
       width: 22vh;
+
       cursor: pointer;
+
+      img {
+        width: 100%;
+        height: auto;
+      }
     }
 
     .retakeSubmitBtnContainer {
@@ -116,53 +234,235 @@ $color-one: #212121;
   }
 }
 
+/*
+ * ---------------------------------------------------------
+ * LOADER
+ * ---------------------------------------------------------
+ */
+
 .loader2 {
   width: 2vh;
   height: 2vh;
+
   border-radius: 50%;
+
   background-color: #fff;
-  box-shadow: 4vh 0 #fff, -4vh 0 #fff;
+
+  box-shadow:
+    4vh 0 #fff,
+    -4vh 0 #fff;
+
   position: relative;
+
   animation: flash 0.2s ease-out infinite alternate;
 }
 
 @keyframes flash {
   0% {
     background-color: #fff2;
-    box-shadow: 4vh 0 #fff2, -4vh 0 #fff;
+
+    box-shadow:
+      4vh 0 #fff2,
+      -4vh 0 #fff;
   }
+
   50% {
     background-color: #fff;
-    box-shadow: 4vh 0 #fff2, -4vh 0 #fff2;
+
+    box-shadow:
+      4vh 0 #fff2,
+      -4vh 0 #fff2;
   }
+
   100% {
     background-color: #fff2;
-    box-shadow: 4vh 0 #fff, -4vh 0 #fff2;
+
+    box-shadow:
+      4vh 0 #fff,
+      -4vh 0 #fff2;
   }
 }
 
+/*
+ * ---------------------------------------------------------
+ * DESKTOP
+ * ---------------------------------------------------------
+ */
+
 @media all and (min-width: 1100px) {
   .mainContainer {
-    // border: 1px solid black;
-    height: 80% !important;
-    top: 17% !important;
+    height: 100% !important;
+
     .wrapper {
       gap: 5vh !important;
     }
+
     .editorContainer {
       top: -8.5% !important;
+
       svg {
         font-size: 3vh !important;
       }
     }
 
     .cameraContainer {
-      width: 35vh !important;
-      height: 45vh !important;
+      width: 45vh !important;
+
+      height: 60vh !important;
+
       border-radius: 1vw !important;
     }
-    .countdown {
-      font-size: 3vw !important;
-    }
+  }
+}
+
+.countdownOverlay {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 20;
+
+  pointer-events: none;
+
+  /*
+   * Slight darkening makes the number
+   * much easier to see over the camera.
+   */
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.countdownNumber {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 14vh;
+  height: 14vh;
+
+  border-radius: 50%;
+
+  color: #fff;
+
+  font-size: 8vh;
+  font-weight: 800;
+  line-height: 1;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  /*
+   * Glass effect
+   */
+  background: rgba(0, 0, 0, 0.35);
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  border: 2px solid rgba(255, 255, 255, 0.8);
+
+  box-shadow:
+    0 0 20px rgba(255, 255, 255, 0.25),
+    0 0 50px rgba(0, 0, 0, 0.35);
+
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+
+  animation: countdownPop 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.countdownNumber::before {
+  content: "";
+
+  position: absolute;
+  inset: -8px;
+
+  border-radius: 50%;
+
+  border: 2px solid rgba(255, 255, 255, 0.25);
+
+  animation: countdownRing 0.9s ease-out forwards;
+}
+
+.countdownText {
+  margin-top: 2vh;
+
+  color: #fff;
+
+  font-size: 1.8vh;
+  font-weight: 700;
+
+  letter-spacing: 0.35em;
+
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+
+  animation: countdownTextFade 0.9s ease-out forwards;
+}
+
+/*
+ * Number animation
+ */
+@keyframes countdownPop {
+  0% {
+    opacity: 0;
+
+    transform: scale(1.7);
+  }
+
+  20% {
+    opacity: 1;
+
+    transform: scale(0.95);
+  }
+
+  45% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+
+    transform: scale(1);
+  }
+}
+
+/*
+ * Expanding circle
+ */
+@keyframes countdownRing {
+  0% {
+    opacity: 0.9;
+
+    transform: scale(0.7);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform: scale(1.5);
+  }
+}
+
+/*
+ * GET READY animation
+ */
+@keyframes countdownTextFade {
+  0% {
+    opacity: 0;
+
+    transform: translateY(10px);
+  }
+
+  40% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+
+    transform: translateY(0);
   }
 }

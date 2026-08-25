@@ -2,10 +2,11 @@ import React, { useEffect } from "react";
 import "./homePage.scss";
 import { Link } from "react-router-dom";
 
-import homeBg from "./../../assets/homePage/homeBg.png";
+import bg from "./../../assets/bg.webp";
 import logo from "./../../assets/logo.png";
 import startBtn from "./../../assets/homePage/startBtn.png";
 import homeLaptopBg from "./../../assets/homePage/homeLaptopBg.png";
+import virat from "./../../assets/models/virat.png";
 
 export default function HomePage({
   setUrl,
@@ -23,7 +24,7 @@ export default function HomePage({
     <div className="HomePage flex-col-center">
       {/* bg */}
       <div className="homeBgContainer flex-row-center">
-        <img src={isHorizontalScreen ? homeLaptopBg : homeBg} alt="homeBg" />
+        <img src={isHorizontalScreen ? bg : bg} alt="homeBg" />
       </div>
 
       {/* main container */}
@@ -31,6 +32,10 @@ export default function HomePage({
         {/* logo */}
         <div className="logoContainer flex-row-center">
           <img src={logo} alt="logo" />
+        </div>
+
+        <div className="modelImage flex-row-center">
+          <img src={virat} alt="model" />
         </div>
 
         {/* btn */}
