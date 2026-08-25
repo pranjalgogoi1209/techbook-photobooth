@@ -794,13 +794,14 @@ export default function CameraPage({
                     onUserMediaError={handleCameraError}
                     style={{
                       position: "absolute",
-                      inset: 0,
+                      top: 0,
+                      left: 0,
                       width: "100%",
                       height: "100%",
-                      objectFit: "contain",
-                      objectPosition: "center",
+                      objectFit: "cover",
                       zIndex: 1,
                       display: "block",
+                      transform: "scaleX(1)",
                     }}
                   />
 
