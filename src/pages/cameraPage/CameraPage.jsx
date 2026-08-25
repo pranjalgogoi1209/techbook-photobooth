@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
+
 import Draggable from "react-draggable";
 import "./cameraPage.scss";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
+
 import { MdCameraswitch } from "react-icons/md";
 
 import {
@@ -43,40 +45,65 @@ export default function CameraPage({
 
   const navigate = useNavigate();
 
+  /*
+   * =========================================================
+   * CAMERA MODE
+   * =========================================================
+   *
+   * IMPORTANT:
+   *
+   * sessionStorage keeps the selected camera while navigating
+   * between React pages.
+   *
+   * Refreshing the browser starts again with BACK camera.
+   */
+
+  const [cameraFacingMode, setCameraFacingMode] = useState(() => {
+    const savedCamera = sessionStorage.getItem("photobooth-camera-facing");
+
+    return savedCamera === "user" ? "user" : "environment";
+  });
+
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
+
+  /*
+   * =========================================================
+   * OTHER STATE
+   * =========================================================
+   */
+
   const [isCaptured, setIsCaptured] = useState(Boolean(capturedImg));
 
   const [isCounting, setIsCounting] = useState(false);
+
   const [counting, setCounting] = useState(5);
+
   const [isOpenEditor, setIsOpenEditor] = useState(false);
+
   const [isCameraReady, setIsCameraReady] = useState(false);
-  const [cameraFacingMode, setCameraFacingMode] = useState("environment");
-  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
-
-  const switchCamera = () => {
-    if (isCounting || isSwitchingCamera) {
-      return;
-    }
-
-    setIsSwitchingCamera(true);
-    setIsCameraReady(false);
-
-    setCameraFacingMode((previous) =>
-      previous === "environment" ? "user" : "environment",
-    );
-  };
 
   /*
    * =========================================================
    * FINAL IMAGE SIZE
    * =========================================================
    *
-   * 2:3 portrait
+   * 2:3
    *
    * 1080 x 1620
    */
 
   const TARGET_WIDTH = 1080;
   const TARGET_HEIGHT = 1620;
+
+  /*
+   * =========================================================
+   * SAVE CAMERA MODE
+   * =========================================================
+   */
+
+  useEffect(() => {
+    sessionStorage.setItem("photobooth-camera-facing", cameraFacingMode);
+  }, [cameraFacingMode]);
 
   /*
    * =========================================================
@@ -89,8 +116,11 @@ export default function CameraPage({
 
     if (!video) {
       console.warn("Camera video element not found.");
+
       return;
     }
+
+    console.log("Camera:", cameraFacingMode);
 
     console.log(
       "Actual camera resolution:",
@@ -100,7 +130,8 @@ export default function CameraPage({
     );
 
     setIsCameraReady(true);
-  }, []);
+    setIsSwitchingCamera(false);
+  }, [cameraFacingMode]);
 
   /*
    * =========================================================
@@ -110,8 +141,29 @@ export default function CameraPage({
 
   const handleCameraError = useCallback((error) => {
     console.error("Camera error:", error);
+
     setIsCameraReady(false);
+    setIsSwitchingCamera(false);
   }, []);
+
+  /*
+   * =========================================================
+   * SWITCH CAMERA
+   * =========================================================
+   */
+
+  const switchCamera = () => {
+    if (isCounting || isSwitchingCamera || isCaptured) {
+      return;
+    }
+
+    setIsSwitchingCamera(true);
+    setIsCameraReady(false);
+
+    setCameraFacingMode((previous) =>
+      previous === "environment" ? "user" : "environment",
+    );
+  };
 
   /*
    * =========================================================
@@ -140,6 +192,7 @@ export default function CameraPage({
 
     if (match) {
       const newDx = parseFloat(match[1]);
+
       const newDy = parseFloat(match[2]);
 
       setDx(newDx);
@@ -183,8 +236,7 @@ export default function CameraPage({
     let srcH = inputHeight;
 
     /*
-     * Camera is wider than 2:3.
-     * Crop left/right.
+     * Wider than 2:3
      */
 
     if (inputRatio > targetRatio) {
@@ -193,8 +245,7 @@ export default function CameraPage({
       srcX = (inputWidth - srcW) / 2;
     } else {
       /*
-       * Camera is taller than 2:3.
-       * Crop top/bottom.
+       * Taller than 2:3
        */
 
       srcH = inputWidth / targetRatio;
@@ -236,21 +287,6 @@ export default function CameraPage({
    * =========================================================
    * CAPTURE COMPLETE IMAGE
    * =========================================================
-   *
-   * IMPORTANT:
-   *
-   * Camera
-   *   ↓
-   * Center crop to 2:3
-   *   ↓
-   * 1080 x 1620
-   *
-   * Then:
-   *
-   * Camera + Model + Frame
-   *
-   * The model is NEVER stretched.
-   * Its original aspect ratio is preserved.
    */
 
   const captureCompleteImage = useCallback(async () => {
@@ -262,43 +298,50 @@ export default function CameraPage({
 
     if (!video) {
       console.error("Video element not available.");
+
       return null;
     }
 
     if (!container) {
       console.error("Camera container not available.");
+
       return null;
     }
 
     if (!modelElement) {
       console.error("Model element not available.");
+
       return null;
     }
 
     if (video.readyState < 2) {
       console.error("Video is not ready.");
+
       return null;
     }
 
     if (!video.videoWidth || !video.videoHeight) {
       console.error("Camera dimensions unavailable.");
+
       return null;
     }
 
     /*
-     * -------------------------------------------------------
-     * CREATE / REUSE CANVAS
-     * -------------------------------------------------------
+     * =====================================================
+     * CANVAS
+     * =====================================================
      */
 
     let canvas = captureCanvasRef.current;
 
     if (!canvas) {
       canvas = document.createElement("canvas");
+
       captureCanvasRef.current = canvas;
     }
 
     canvas.width = TARGET_WIDTH;
+
     canvas.height = TARGET_HEIGHT;
 
     const ctx = canvas.getContext("2d", {
@@ -307,22 +350,18 @@ export default function CameraPage({
 
     if (!ctx) {
       console.error("Canvas context unavailable.");
+
       return null;
     }
 
-    /*
-     * -------------------------------------------------------
-     * HIGH QUALITY
-     * -------------------------------------------------------
-     */
-
     ctx.imageSmoothingEnabled = true;
+
     ctx.imageSmoothingQuality = "high";
 
     /*
-     * -------------------------------------------------------
+     * =====================================================
      * CAMERA CROP
-     * -------------------------------------------------------
+     * =====================================================
      */
 
     const { srcX, srcY, srcW, srcH } = getCropDimensions(
@@ -331,19 +370,25 @@ export default function CameraPage({
     );
 
     /*
-     * -------------------------------------------------------
+     * =====================================================
      * DRAW CAMERA
-     * -------------------------------------------------------
+     * =====================================================
      */
 
     ctx.clearRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
+    /*
+     * FRONT CAMERA
+     *
+     * Preview is mirrored.
+     * Canvas must also be mirrored.
+     */
+
     if (cameraFacingMode === "user") {
-      // FRONT CAMERA:
-      // Preview is mirrored, so mirror the canvas too.
       ctx.save();
 
       ctx.translate(TARGET_WIDTH, 0);
+
       ctx.scale(-1, 1);
 
       ctx.drawImage(
@@ -360,8 +405,12 @@ export default function CameraPage({
 
       ctx.restore();
     } else {
-      // BACK CAMERA:
-      // Never mirror.
+      /*
+       * BACK CAMERA
+       *
+       * Never mirror.
+       */
+
       ctx.drawImage(
         video,
         srcX,
@@ -376,9 +425,9 @@ export default function CameraPage({
     }
 
     /*
-     * -------------------------------------------------------
-     * LOAD MODEL FIRST
-     * -------------------------------------------------------
+     * =====================================================
+     * LOAD MODEL
+     * =====================================================
      */
 
     let modelImage;
@@ -392,28 +441,14 @@ export default function CameraPage({
     }
 
     /*
-     * -------------------------------------------------------
+     * =====================================================
      * MODEL POSITION
-     * -------------------------------------------------------
-     *
-     * The browser model and canvas both represent
-     * the same 2:3 camera area.
-     *
-     * We calculate the position using the container.
+     * =====================================================
      */
 
     const containerRect = container.getBoundingClientRect();
 
     const modelRect = modelElement.getBoundingClientRect();
-
-    /*
-     * The camera container is 2:3.
-     *
-     * Therefore use ONE scale value.
-     *
-     * This is important because using independent
-     * scaleX and scaleY can stretch the model.
-     */
 
     const scale = TARGET_WIDTH / containerRect.width;
 
@@ -422,15 +457,11 @@ export default function CameraPage({
     const modelY = (modelRect.top - containerRect.top) * scale;
 
     /*
-     * -------------------------------------------------------
-     * PRESERVE MODEL ASPECT RATIO
-     * -------------------------------------------------------
+     * =====================================================
+     * MODEL SIZE
+     * =====================================================
      *
-     * Use the natural image ratio.
-     *
-     * Width determines height.
-     *
-     * NEVER independently scale width and height.
+     * Preserve original aspect ratio.
      */
 
     const modelWidth = modelRect.width * scale;
@@ -439,28 +470,18 @@ export default function CameraPage({
 
     const modelHeight = modelWidth * modelAspectRatio;
 
-    console.log("Model capture:", {
-      x: modelX,
-      y: modelY,
-      width: modelWidth,
-      height: modelHeight,
-      naturalWidth: modelImage.naturalWidth,
-      naturalHeight: modelImage.naturalHeight,
-      aspectRatio: modelAspectRatio,
-    });
-
     /*
-     * -------------------------------------------------------
+     * =====================================================
      * DRAW MODEL
-     * -------------------------------------------------------
+     * =====================================================
      */
 
     ctx.drawImage(modelImage, modelX, modelY, modelWidth, modelHeight);
 
     /*
-     * -------------------------------------------------------
+     * =====================================================
      * LOAD FRAME
-     * -------------------------------------------------------
+     * =====================================================
      */
 
     let frameImage;
@@ -474,29 +495,44 @@ export default function CameraPage({
     }
 
     /*
-     * -------------------------------------------------------
+     * =====================================================
      * DRAW FRAME
-     * -------------------------------------------------------
+     * =====================================================
      */
 
     ctx.drawImage(frameImage, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
     /*
-     * -------------------------------------------------------
+     * =====================================================
      * EXPORT
-     * -------------------------------------------------------
+     * =====================================================
      */
 
     const finalImage = canvas.toDataURL("image/png");
 
-    console.log("Final PNG created:", `${TARGET_WIDTH}x${TARGET_HEIGHT}`);
+    console.log("Final image:", `${TARGET_WIDTH}x${TARGET_HEIGHT}`);
+
+    console.log("Captured camera mode:", cameraFacingMode);
 
     return finalImage;
-  }, [getCropDimensions, loadImage]);
+  }, [
+    getCropDimensions,
+    loadImage,
+
+    /*
+     * IMPORTANT:
+     *
+     * This MUST be here.
+     *
+     * Otherwise captureCompleteImage
+     * can keep the old camera mode.
+     */
+    cameraFacingMode,
+  ]);
 
   /*
    * =========================================================
-   * CAPTURE BUTTON
+   * CAPTURE
    * =========================================================
    */
 
@@ -507,6 +543,7 @@ export default function CameraPage({
 
     if (!isCameraReady) {
       console.warn("Camera is not ready.");
+
       return;
     }
 
@@ -617,13 +654,6 @@ export default function CameraPage({
       const timer = setTimeout(async () => {
         setIsCounting(false);
 
-        /*
-         * IMPORTANT:
-         *
-         * Capture while camera + model
-         * are still mounted.
-         */
-
         const finalImage = await captureCompleteImage();
 
         if (!finalImage) {
@@ -631,10 +661,6 @@ export default function CameraPage({
 
           return;
         }
-
-        /*
-         * Save complete image.
-         */
 
         setCapturedImg(finalImage);
 
@@ -722,27 +748,21 @@ export default function CameraPage({
         <img src={bg} alt="cameraPageBg" />
       </div>
 
-      {/* MAIN CONTAINER */}
+      {/* MAIN */}
 
       <div className="mainContainer flex-col-center">
         <div className="wrapper flex-col-center">
-          {/* CAMERA AREA */}
-
           <div className="cameraContainerWrapper flex-col-center">
             {/* EDITOR */}
 
             {isOpenEditor && !isCaptured && (
               <div className="editorContainer flex-row-center">
-                {/* LEFT */}
-
                 <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("left")}
                 >
                   <MdArrowLeft />
                 </div>
-
-                {/* RIGHT */}
 
                 <div
                   className="moveBtn flex-row-center"
@@ -751,16 +771,12 @@ export default function CameraPage({
                   <MdArrowRight />
                 </div>
 
-                {/* UP */}
-
                 <div
                   className="moveBtn flex-row-center"
                   onClick={() => handleMoving("up")}
                 >
                   <MdOutlineArrowDropUp />
                 </div>
-
-                {/* DOWN */}
 
                 <div
                   className="moveBtn flex-row-center"
@@ -769,8 +785,6 @@ export default function CameraPage({
                   <MdOutlineArrowDropDown />
                 </div>
 
-                {/* INCREASE */}
-
                 <div
                   className="resizeBtn flex-row-center"
                   onClick={() => handleResizing("inc")}
@@ -778,16 +792,12 @@ export default function CameraPage({
                   <GoPlus />
                 </div>
 
-                {/* DECREASE */}
-
                 <div
                   className="resizeBtn flex-row-center"
                   onClick={() => handleResizing("dec")}
                 >
                   <AiOutlineMinus />
                 </div>
-
-                {/* DONE */}
 
                 <div
                   className="flex-row-center closeEditorBtn"
@@ -798,7 +808,7 @@ export default function CameraPage({
               </div>
             )}
 
-            {/* CAMERA CONTAINER */}
+            {/* CAMERA */}
 
             <div
               ref={cameraContainerRef}
@@ -811,21 +821,28 @@ export default function CameraPage({
             >
               {!isCaptured && (
                 <>
-                  {/* BACK CAMERA */}
+                  {/* WEBCAM */}
 
                   <Webcam
                     key={cameraFacingMode}
                     ref={webcamRef}
                     id="webcam"
                     audio={false}
+                    /*
+                     * FRONT = mirrored
+                     * BACK = normal
+                     */
+
                     mirrored={cameraFacingMode === "user"}
                     videoConstraints={{
                       facingMode: {
                         ideal: cameraFacingMode,
                       },
+
                       width: {
                         ideal: 2160,
                       },
+
                       height: {
                         ideal: 3240,
                       },
@@ -836,41 +853,59 @@ export default function CameraPage({
                     }}
                     onUserMediaError={(error) => {
                       handleCameraError(error);
+
                       setIsSwitchingCamera(false);
                     }}
                     style={{
                       position: "absolute",
+
                       top: 0,
                       left: 0,
+
                       width: "100%",
                       height: "100%",
+
                       objectFit: "cover",
+
                       zIndex: 1,
+
                       display: "block",
-                      // transform: "scaleX(1)",
+
+                      transform: "none",
                     }}
                   />
 
-                  {/* CAMERA LOADING */}
+                  {/* LOADING */}
 
-                  {!isCameraReady && (
+                  {(!isCameraReady || isSwitchingCamera) && (
                     <div
                       style={{
                         position: "absolute",
+
                         top: 0,
                         left: 0,
+
                         width: "100%",
                         height: "100%",
+
                         display: "flex",
+
                         alignItems: "center",
+
                         justifyContent: "center",
+
                         background: "rgba(0,0,0,0.75)",
+
                         color: "#fff",
-                        zIndex: 10,
+
+                        zIndex: 25,
+
                         fontSize: "18px",
                       }}
                     >
-                      Starting Camera...
+                      {isSwitchingCamera
+                        ? "Switching Camera..."
+                        : "Starting Camera..."}
                     </div>
                   )}
 
@@ -925,11 +960,16 @@ export default function CameraPage({
                     className="frameContainer flex-row-center"
                     style={{
                       position: "absolute",
+
                       top: 0,
                       left: 0,
+
                       width: "100%",
+
                       height: "100%",
+
                       zIndex: 3,
+
                       pointerEvents: "none",
                     }}
                   >
@@ -939,15 +979,18 @@ export default function CameraPage({
               )}
 
               {/* CAMERA SWITCH */}
-              <button
-                type="button"
-                onClick={switchCamera}
-                disabled={isCounting || isSwitchingCamera}
-                className="cameraSwitchBtn"
-                aria-label="Switch camera"
-              >
-                <MdCameraswitch />
-              </button>
+
+              {!isCaptured && (
+                <button
+                  type="button"
+                  onClick={switchCamera}
+                  disabled={isCounting || isSwitchingCamera}
+                  className="cameraSwitchBtn"
+                  aria-label="Switch camera"
+                >
+                  <MdCameraswitch />
+                </button>
+              )}
 
               {/* CAPTURED IMAGE */}
 
@@ -957,12 +1000,19 @@ export default function CameraPage({
                   alt="capturedImg"
                   style={{
                     position: "absolute",
+
                     inset: 0,
+
                     width: "100%",
+
                     height: "100%",
+
                     objectFit: "cover",
+
                     objectPosition: "center",
+
                     zIndex: 1,
+
                     display: "block",
                   }}
                 />
@@ -975,16 +1025,12 @@ export default function CameraPage({
 
         {isCaptured ? (
           <div className="retakeSubmitBtnContainer flex-row-center">
-            {/* RETAKE */}
-
             <div
               onClick={retakeImg}
               className="retakeBtnContainer flex-row-center"
             >
               <img src={retakeBtn} alt="retakeBtn" />
             </div>
-
-            {/* SUBMIT */}
 
             <div
               onClick={submitImg}
@@ -994,8 +1040,6 @@ export default function CameraPage({
             </div>
           </div>
         ) : (
-          /* CAPTURE */
-
           <div
             onClick={captureImg}
             className="captureBtnContainer flex-row-center"
