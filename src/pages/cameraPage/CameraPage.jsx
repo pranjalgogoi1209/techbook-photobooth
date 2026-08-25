@@ -36,15 +36,12 @@ export default function CameraPage({
   setSize,
 }) {
   const webcamRef = useRef(null);
-  const screenshotRef = useRef(null);
   const modelRef = useRef(null);
-
-  // Hidden canvas used ONLY for capturing the real video frame
   const captureCanvasRef = useRef(null);
 
   const navigate = useNavigate();
 
-  const [isCaptured, setIsCaptured] = useState(false);
+  const [isCaptured, setIsCaptured] = useState(Boolean(capturedImg));
 
   const [isCounting, setIsCounting] = useState(false);
 
@@ -56,17 +53,12 @@ export default function CameraPage({
 
   /*
    * ---------------------------------------------------------
-   * OUTPUT SIZE
+   * FINAL IMAGE SIZE
    * ---------------------------------------------------------
    *
-   * Final image:
+   * 2:3 portrait
    *
    * 1080 x 1620
-   *
-   * Ratio:
-   *
-   * 2 : 3
-   *
    */
 
   const TARGET_WIDTH = 1080;
@@ -74,7 +66,7 @@ export default function CameraPage({
 
   /*
    * ---------------------------------------------------------
-   * CAMERA
+   * CAMERA READY
    * ---------------------------------------------------------
    */
 
@@ -90,6 +82,12 @@ export default function CameraPage({
 
     setIsCameraReady(true);
   }, []);
+
+  /*
+   * ---------------------------------------------------------
+   * CAMERA ERROR
+   * ---------------------------------------------------------
+   */
 
   const handleCameraError = useCallback((error) => {
     console.error("Camera error:", error);
@@ -112,13 +110,6 @@ export default function CameraPage({
   };
 
   const handleStop = () => {
-    /*
-     * Save model position after dragging.
-     *
-     * IMPORTANT:
-     * We don't update dx/dy during render.
-     */
-
     if (!modelRef.current) return;
 
     const transform = modelRef.current.style.transform;
@@ -148,14 +139,8 @@ export default function CameraPage({
 
   /*
    * ---------------------------------------------------------
-   * GET 2:3 CROP
+   * 2:3 CROP
    * ---------------------------------------------------------
-   *
-   * We take the actual camera video dimensions and
-   * center-crop them to 2:3.
-   *
-   * No stretching.
-   *
    */
 
   const getCropDimensions = useCallback((inputWidth, inputHeight) => {
@@ -169,6 +154,7 @@ export default function CameraPage({
     }
 
     const inputRatio = inputWidth / inputHeight;
+
     const targetRatio = TARGET_WIDTH / TARGET_HEIGHT;
 
     let srcX = 0;
@@ -176,21 +162,19 @@ export default function CameraPage({
     let srcW = inputWidth;
     let srcH = inputHeight;
 
-    if (inputRatio > targetRatio) {
-      /*
-       * Camera is wider than 2:3.
-       *
-       * Crop left + right.
-       */
+    /*
+     * Camera wider than 2:3.
+     * Crop left/right.
+     */
 
+    if (inputRatio > targetRatio) {
       srcW = inputHeight * targetRatio;
 
       srcX = (inputWidth - srcW) / 2;
     } else {
       /*
-       * Camera is taller than 2:3.
-       *
-       * Crop top + bottom.
+       * Camera taller than 2:3.
+       * Crop top/bottom.
        */
 
       srcH = inputWidth / targetRatio;
@@ -213,27 +197,17 @@ export default function CameraPage({
    *
    * IMPORTANT:
    *
-   * We DO NOT use:
+   * This does NOT use:
    *
    * webcam.getScreenshot()
    *
-   * We DO NOT use:
+   * This does NOT use:
    *
    * getScreenshot()
    *
-   * We DO NOT capture the DOM.
+   * This captures directly from:
    *
-   * We DO NOT capture a screenshot of the webcam element.
-   *
-   * Instead:
-   *
-   * Camera
-   *    ↓
-   * HTML VIDEO
-   *    ↓
-   * Canvas
-   *    ↓
-   * PNG
+   * HTML VIDEO -> CANVAS -> PNG
    *
    */
 
@@ -242,29 +216,31 @@ export default function CameraPage({
 
     if (!video) {
       console.error("Video element is not available.");
+
       return null;
     }
 
     if (video.readyState < 2) {
       console.error("Video is not ready.");
+
       return null;
     }
 
     if (!video.videoWidth || !video.videoHeight) {
-      console.error("Video dimensions are not available.");
+      console.error("Video dimensions are unavailable.");
 
       return null;
     }
 
     console.log(
-      "Capturing video frame:",
+      "Capturing actual video frame:",
       video.videoWidth,
       "x",
       video.videoHeight,
     );
 
     /*
-     * Create/reuse capture canvas.
+     * Create/reuse canvas.
      */
 
     let canvas = captureCanvasRef.current;
@@ -276,7 +252,7 @@ export default function CameraPage({
     }
 
     /*
-     * Final PNG size.
+     * Final image resolution.
      */
 
     canvas.width = TARGET_WIDTH;
@@ -287,7 +263,7 @@ export default function CameraPage({
     });
 
     if (!ctx) {
-      console.error("Could not create canvas context.");
+      console.error("Unable to create canvas context.");
 
       return null;
     }
@@ -297,7 +273,6 @@ export default function CameraPage({
      */
 
     ctx.imageSmoothingEnabled = true;
-
     ctx.imageSmoothingQuality = "high";
 
     /*
@@ -310,15 +285,15 @@ export default function CameraPage({
     );
 
     /*
-     * Clear canvas.
+     * Clear previous image.
      */
 
     ctx.clearRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
     /*
-     * Draw CURRENT VIDEO FRAME.
+     * Draw the CURRENT video frame.
      *
-     * This is the important part.
+     * No screenshot API.
      */
 
     ctx.drawImage(
@@ -336,7 +311,7 @@ export default function CameraPage({
     );
 
     /*
-     * Export LOSSLESS PNG.
+     * Export as PNG.
      */
 
     const pngData = canvas.toDataURL("image/png");
@@ -348,22 +323,14 @@ export default function CameraPage({
 
   /*
    * ---------------------------------------------------------
-   * CAPTURE IMAGE
+   * CAPTURE BUTTON
    * ---------------------------------------------------------
    */
 
   const captureImg = () => {
-    /*
-     * Prevent multiple clicks.
-     */
-
     if (isCounting || isCaptured) {
       return;
     }
-
-    /*
-     * Make sure camera is ready.
-     */
 
     if (!isCameraReady) {
       console.warn("Camera is not ready yet.");
@@ -371,12 +338,7 @@ export default function CameraPage({
       return;
     }
 
-    /*
-     * Start from 5.
-     */
-
     setCounting(5);
-
     setIsCounting(true);
   };
 
@@ -398,6 +360,10 @@ export default function CameraPage({
     setCounting(5);
 
     setIsCounting(false);
+
+    /*
+     * Allow camera to become ready again.
+     */
 
     setIsCameraReady(false);
   };
@@ -464,8 +430,7 @@ export default function CameraPage({
    * COUNTDOWN
    * ---------------------------------------------------------
    *
-   * 5 → 4 → 3 → 2 → 1 → CAPTURE
-   *
+   * 5 -> 4 -> 3 -> 2 -> 1 -> CAPTURE
    */
 
   useEffect(() => {
@@ -474,10 +439,10 @@ export default function CameraPage({
     }
 
     /*
-     * 5 → 4
-     * 4 → 3
-     * 3 → 2
-     * 2 → 1
+     * 5 -> 4
+     * 4 -> 3
+     * 3 -> 2
+     * 2 -> 1
      */
 
     if (counting > 1) {
@@ -495,23 +460,20 @@ export default function CameraPage({
      * COUNTING === 1
      * -------------------------------------------------------
      *
-     * Keep "1" visible for one second.
-     *
-     * Then capture the actual video frame.
+     * Keep 1 visible for one second,
+     * then capture.
      */
 
     if (counting === 1) {
       const timer = setTimeout(() => {
         /*
-         * Stop countdown first.
+         * Stop countdown.
          */
 
         setIsCounting(false);
 
         /*
-         * ---------------------------------------------------
-         * CAPTURE ACTUAL VIDEO FRAME
-         * ---------------------------------------------------
+         * Capture the REAL camera frame.
          */
 
         const base64Data = captureVideoFrame();
@@ -523,17 +485,14 @@ export default function CameraPage({
         }
 
         /*
-         * Save RAW camera PNG.
+         * Save captured image.
          */
 
         setCapturedImg(base64Data);
 
         /*
-         * If your output page expects
-         * capturedImgWithFrame, use the same
-         * high-resolution PNG for now.
-         *
-         * This does NOT screenshot the DOM.
+         * Keep compatibility with your
+         * existing output flow.
          */
 
         if (setCapturedImgWithFrame) {
@@ -541,7 +500,12 @@ export default function CameraPage({
         }
 
         /*
-         * Show captured state.
+         * IMPORTANT:
+         *
+         * This changes the UI to captured mode.
+         *
+         * The model is still rendered in the
+         * captured mode below.
          */
 
         setIsCaptured(true);
@@ -567,10 +531,6 @@ export default function CameraPage({
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      /*
-       * Don't allow model editing while captured.
-       */
-
       if (isCaptured) {
         return;
       }
@@ -639,7 +599,7 @@ export default function CameraPage({
 
             {isOpenEditor && !isCaptured && (
               <div className="editorContainer flex-row-center">
-                {/* MOVE LEFT */}
+                {/* LEFT */}
 
                 <div
                   className="moveBtn flex-row-center"
@@ -648,7 +608,7 @@ export default function CameraPage({
                   <MdArrowLeft />
                 </div>
 
-                {/* MOVE RIGHT */}
+                {/* RIGHT */}
 
                 <div
                   className="moveBtn flex-row-center"
@@ -657,7 +617,7 @@ export default function CameraPage({
                   <MdArrowRight />
                 </div>
 
-                {/* MOVE UP */}
+                {/* UP */}
 
                 <div
                   className="moveBtn flex-row-center"
@@ -666,7 +626,7 @@ export default function CameraPage({
                   <MdOutlineArrowDropUp />
                 </div>
 
-                {/* MOVE DOWN */}
+                {/* DOWN */}
 
                 <div
                   className="moveBtn flex-row-center"
@@ -709,40 +669,121 @@ export default function CameraPage({
             <div className="cameraContainer flex-row-center">
               {isCaptured ? (
                 /*
-                 * ------------------------------------------------
-                 * CAPTURED IMAGE
-                 * ------------------------------------------------
-                 */
-
-                <div className="capturedImgContainer flex-row-center">
-                  {capturedImg ? (
-                    <img src={capturedImg} alt="capturedImg" />
-                  ) : (
-                    <span className="loader2"></span>
-                  )}
-                </div>
-              ) : (
-                /*
-                 * ------------------------------------------------
-                 * LIVE CAMERA
-                 * ------------------------------------------------
+                 * =================================================
+                 * CAPTURED MODE
+                 * =================================================
+                 *
+                 * Captured photo is the background.
+                 *
+                 * Model stays visible.
+                 *
+                 * Frame stays visible.
                  */
 
                 <div
-                  ref={screenshotRef}
                   className="webcamWithModel flex-row-center"
+                  style={{
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
                 >
-                  {/* -------------------------------------------
-                      REAL BACK CAMERA
-                  -------------------------------------------- */}
+                  {/* ---------------------------------------------
+                      CAPTURED CAMERA PHOTO
+                  ---------------------------------------------- */}
+
+                  {capturedImg && (
+                    <img
+                      src={capturedImg}
+                      alt="capturedImg"
+                      style={{
+                        position: "absolute",
+
+                        top: 0,
+                        left: 0,
+
+                        width: "100%",
+                        height: "100%",
+
+                        objectFit: "cover",
+
+                        zIndex: 1,
+
+                        display: "block",
+                      }}
+                    />
+                  )}
+
+                  {/* ---------------------------------------------
+                      MODEL OVERLAY
+                  ---------------------------------------------- */}
+
+                  <div
+                    className="modelContainer flex-row-center"
+                    style={{
+                      position: "absolute",
+
+                      width: `${size}vh`,
+
+                      transform: `translate(
+                        ${dx || 0}px,
+                        ${dy || 0}px
+                      )`,
+
+                      zIndex: 2,
+
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <img src="/model-virat.png" alt="model" draggable={false} />
+                  </div>
+
+                  {/* ---------------------------------------------
+                      FRAME OVERLAY
+                  ---------------------------------------------- */}
+
+                  <div
+                    className="frameContainer flex-row-center"
+                    style={{
+                      position: "absolute",
+
+                      top: 0,
+                      left: 0,
+
+                      width: "100%",
+                      height: "100%",
+
+                      zIndex: 3,
+
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <img src={frame} alt="frame" draggable={false} />
+                  </div>
+                </div>
+              ) : (
+                /*
+                 * =================================================
+                 * LIVE CAMERA MODE
+                 * =================================================
+                 */
+
+                <div
+                  className="webcamWithModel flex-row-center"
+                  style={{
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* ---------------------------------------------
+                      BACK CAMERA
+                  ---------------------------------------------- */}
 
                   <Webcam
                     ref={webcamRef}
                     id="webcam"
                     audio={false}
                     /*
-                     * IMPORTANT:
-                     * Back camera.
+                     * BACK CAMERA
                      */
 
                     mirrored={false}
@@ -750,13 +791,6 @@ export default function CameraPage({
                       facingMode: {
                         exact: "environment",
                       },
-
-                      /*
-                       * Request high resolution.
-                       *
-                       * Actual resolution depends on
-                       * the device/browser.
-                       */
 
                       width: {
                         ideal: 2160,
@@ -769,41 +803,45 @@ export default function CameraPage({
                     onUserMedia={handleCameraReady}
                     onUserMediaError={handleCameraError}
                     style={{
-                      gridArea: "1 / 1",
+                      position: "absolute",
+
+                      top: 0,
+                      left: 0,
 
                       width: "100%",
                       height: "100%",
 
-                      /*
-                       * Keep camera aspect visually
-                       * consistent with container.
-                       */
-
                       objectFit: "cover",
 
+                      zIndex: 1,
+
+                      display: "block",
+
                       /*
-                       * Absolutely NO MIRROR.
+                       * Explicitly NOT mirrored.
                        */
 
                       transform: "scaleX(1)",
-
-                      display: "block",
                     }}
                   />
 
-                  {/* -------------------------------------------
+                  {/* ---------------------------------------------
                       CAMERA LOADING
-                  -------------------------------------------- */}
+                  ---------------------------------------------- */}
 
                   {!isCameraReady && (
                     <div
                       style={{
-                        gridArea: "1 / 1",
+                        position: "absolute",
+
+                        top: 0,
+                        left: 0,
 
                         width: "100%",
                         height: "100%",
 
                         display: "flex",
+
                         alignItems: "center",
                         justifyContent: "center",
 
@@ -811,7 +849,7 @@ export default function CameraPage({
 
                         color: "#fff",
 
-                        zIndex: 5,
+                        zIndex: 10,
 
                         fontSize: "18px",
                       }}
@@ -820,12 +858,17 @@ export default function CameraPage({
                     </div>
                   )}
 
-                  {/* -------------------------------------------
+                  {/* ---------------------------------------------
                       COUNTDOWN
-                  -------------------------------------------- */}
+                  ---------------------------------------------- */}
 
                   {isCounting && counting > 0 && (
-                    <div className="countdownOverlay">
+                    <div
+                      className="countdownOverlay"
+                      style={{
+                        zIndex: 20,
+                      }}
+                    >
                       <div key={counting} className="countdownNumber">
                         {counting}
                       </div>
@@ -834,9 +877,9 @@ export default function CameraPage({
                     </div>
                   )}
 
-                  {/* -------------------------------------------
+                  {/* ---------------------------------------------
                       MODEL
-                  -------------------------------------------- */}
+                  ---------------------------------------------- */}
 
                   <Draggable
                     nodeRef={modelRef}
@@ -853,6 +896,7 @@ export default function CameraPage({
                       className="modelContainer flex-row-center"
                       style={{
                         width: `${size}vh`,
+                        zIndex: 2,
                       }}
                     >
                       <img
@@ -862,19 +906,38 @@ export default function CameraPage({
                       />
                     </div>
                   </Draggable>
+
+                  {/* ---------------------------------------------
+                      FRAME
+                  ---------------------------------------------- */}
+
+                  <div
+                    className="frameContainer flex-row-center"
+                    style={{
+                      position: "absolute",
+
+                      top: 0,
+                      left: 0,
+
+                      width: "100%",
+                      height: "100%",
+
+                      zIndex: 3,
+
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <img src={frame} alt="frame" draggable={false} />
+                  </div>
                 </div>
               )}
-
-              {/* FRAME */}
-
-              <div className="frameContainer flex-row-center">
-                <img src={frame} alt="frame" draggable={false} />
-              </div>
             </div>
           </div>
         </div>
 
-        {/* BUTTONS */}
+        {/* =====================================================
+            BUTTONS
+        ====================================================== */}
 
         {isCaptured ? (
           <div className="retakeSubmitBtnContainer flex-row-center">
@@ -907,9 +970,6 @@ export default function CameraPage({
           </div>
         )}
       </div>
-
-      {/* Hidden canvas reference is intentionally not rendered.
-          It is created when captureVideoFrame() runs. */}
     </div>
   );
 }
