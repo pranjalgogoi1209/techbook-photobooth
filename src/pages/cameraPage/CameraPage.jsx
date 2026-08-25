@@ -484,14 +484,29 @@ export default function CameraPage({
                   {/* WEBCAM */}
 
                   <Webcam
-                    ref={webcamRef}
+                    ref={camRef}
                     id="webcam"
                     audio={false}
-                    screenshotFormat="image/png"
-                    forceScreenshotSourceSize={true}
-                    mirrored={true}
+                    mirrored={false}
                     videoConstraints={{
-                      facingMode: "user",
+                      facingMode: {
+                        exact: "environment",
+                      },
+                      width: {
+                        ideal: 2160,
+                      },
+                      height: {
+                        ideal: 3240,
+                      },
+                    }}
+                    onUserMedia={handleCameraReady}
+                    onUserMediaError={handleCameraError}
+                    style={{
+                      gridArea: "1 / 1",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
                     }}
                   />
 
