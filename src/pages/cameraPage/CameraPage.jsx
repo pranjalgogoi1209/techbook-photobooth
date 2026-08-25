@@ -5,14 +5,13 @@ import "./cameraPage.scss";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
 
-import { MdCameraswitch } from "react-icons/md";
-
 import {
   MdArrowLeft,
   MdArrowRight,
   MdOutlineArrowDropUp,
   MdOutlineArrowDropDown,
   MdOutlineDone,
+  MdCameraswitch,
 } from "react-icons/md";
 
 import { GoPlus } from "react-icons/go";
@@ -50,12 +49,13 @@ export default function CameraPage({
    * CAMERA MODE
    * =========================================================
    *
-   * IMPORTANT:
+   * environment = BACK
+   * user        = FRONT
    *
    * sessionStorage keeps the selected camera while navigating
-   * between React pages.
+   * between pages.
    *
-   * Refreshing the browser starts again with BACK camera.
+   * Browser refresh starts with BACK camera again.
    */
 
   const [cameraFacingMode, setCameraFacingMode] = useState(() => {
@@ -68,7 +68,7 @@ export default function CameraPage({
 
   /*
    * =========================================================
-   * OTHER STATE
+   * STATE
    * =========================================================
    */
 
@@ -88,8 +88,6 @@ export default function CameraPage({
    * =========================================================
    *
    * 2:3
-   *
-   * 1080 x 1620
    */
 
   const TARGET_WIDTH = 1080;
@@ -97,7 +95,7 @@ export default function CameraPage({
 
   /*
    * =========================================================
-   * SAVE CAMERA MODE
+   * SAVE CAMERA SELECTION
    * =========================================================
    */
 
@@ -116,18 +114,12 @@ export default function CameraPage({
 
     if (!video) {
       console.warn("Camera video element not found.");
-
       return;
     }
 
-    console.log("Camera:", cameraFacingMode);
+    console.log("Camera mode:", cameraFacingMode);
 
-    console.log(
-      "Actual camera resolution:",
-      video.videoWidth,
-      "x",
-      video.videoHeight,
-    );
+    console.log("Camera resolution:", video.videoWidth, "x", video.videoHeight);
 
     setIsCameraReady(true);
     setIsSwitchingCamera(false);
@@ -167,17 +159,13 @@ export default function CameraPage({
 
   /*
    * =========================================================
-   * DRAGGING
+   * DRAG MODEL
    * =========================================================
    */
 
-  const handleStart = () => {
-    // Nothing required.
-  };
+  const handleStart = () => {};
 
-  const handleDrag = () => {
-    // Nothing required.
-  };
+  const handleDrag = () => {};
 
   const handleStop = () => {
     if (!modelRef.current) {
@@ -191,23 +179,9 @@ export default function CameraPage({
     );
 
     if (match) {
-      const newDx = parseFloat(match[1]);
-
-      const newDy = parseFloat(match[2]);
-
-      setDx(newDx);
-      setDy(newDy);
+      setDx(parseFloat(match[1]));
+      setDy(parseFloat(match[2]));
     }
-  };
-
-  /*
-   * =========================================================
-   * EDITOR
-   * =========================================================
-   */
-
-  const handleEditor = () => {
-    setIsOpenEditor(true);
   };
 
   /*
@@ -235,19 +209,11 @@ export default function CameraPage({
     let srcW = inputWidth;
     let srcH = inputHeight;
 
-    /*
-     * Wider than 2:3
-     */
-
     if (inputRatio > targetRatio) {
       srcW = inputHeight * targetRatio;
 
       srcX = (inputWidth - srcW) / 2;
     } else {
-      /*
-       * Taller than 2:3
-       */
-
       srcH = inputWidth / targetRatio;
 
       srcY = (inputHeight - srcH) / 2;
@@ -298,31 +264,26 @@ export default function CameraPage({
 
     if (!video) {
       console.error("Video element not available.");
-
       return null;
     }
 
     if (!container) {
       console.error("Camera container not available.");
-
       return null;
     }
 
     if (!modelElement) {
       console.error("Model element not available.");
-
       return null;
     }
 
     if (video.readyState < 2) {
       console.error("Video is not ready.");
-
       return null;
     }
 
     if (!video.videoWidth || !video.videoHeight) {
       console.error("Camera dimensions unavailable.");
-
       return null;
     }
 
@@ -341,7 +302,6 @@ export default function CameraPage({
     }
 
     canvas.width = TARGET_WIDTH;
-
     canvas.height = TARGET_HEIGHT;
 
     const ctx = canvas.getContext("2d", {
@@ -350,12 +310,10 @@ export default function CameraPage({
 
     if (!ctx) {
       console.error("Canvas context unavailable.");
-
       return null;
     }
 
     ctx.imageSmoothingEnabled = true;
-
     ctx.imageSmoothingQuality = "high";
 
     /*
@@ -379,9 +337,13 @@ export default function CameraPage({
 
     /*
      * FRONT CAMERA
+     * -----------------------------------------------------
      *
-     * Preview is mirrored.
-     * Canvas must also be mirrored.
+     * Webcam preview is mirrored.
+     *
+     * Raw video from the camera is NOT mirrored.
+     *
+     * Therefore mirror the canvas ONLY for front camera.
      */
 
     if (cameraFacingMode === "user") {
@@ -407,6 +369,7 @@ export default function CameraPage({
     } else {
       /*
        * BACK CAMERA
+       * ---------------------------------------------------
        *
        * Never mirror.
        */
@@ -480,7 +443,7 @@ export default function CameraPage({
 
     /*
      * =====================================================
-     * LOAD FRAME
+     * FRAME
      * =====================================================
      */
 
@@ -494,12 +457,6 @@ export default function CameraPage({
       return null;
     }
 
-    /*
-     * =====================================================
-     * DRAW FRAME
-     * =====================================================
-     */
-
     ctx.drawImage(frameImage, 0, 0, TARGET_WIDTH, TARGET_HEIGHT);
 
     /*
@@ -510,9 +467,11 @@ export default function CameraPage({
 
     const finalImage = canvas.toDataURL("image/png");
 
-    console.log("Final image:", `${TARGET_WIDTH}x${TARGET_HEIGHT}`);
-
-    console.log("Captured camera mode:", cameraFacingMode);
+    console.log(
+      "Captured:",
+      cameraFacingMode,
+      `${TARGET_WIDTH}x${TARGET_HEIGHT}`,
+    );
 
     return finalImage;
   }, [
@@ -520,13 +479,12 @@ export default function CameraPage({
     loadImage,
 
     /*
-     * IMPORTANT:
+     * VERY IMPORTANT
      *
-     * This MUST be here.
-     *
-     * Otherwise captureCompleteImage
-     * can keep the old camera mode.
+     * Recreate capture function whenever
+     * front/back camera changes.
      */
+
     cameraFacingMode,
   ]);
 
@@ -543,7 +501,6 @@ export default function CameraPage({
 
     if (!isCameraReady) {
       console.warn("Camera is not ready.");
-
       return;
     }
 
@@ -658,7 +615,6 @@ export default function CameraPage({
 
         if (!finalImage) {
           console.error("Failed to create final image.");
-
           return;
         }
 
@@ -829,8 +785,11 @@ export default function CameraPage({
                     id="webcam"
                     audio={false}
                     /*
-                     * FRONT = mirrored
-                     * BACK = normal
+                     * FRONT:
+                     * mirrored preview
+                     *
+                     * BACK:
+                     * normal preview
                      */
 
                     mirrored={cameraFacingMode === "user"}
@@ -858,7 +817,6 @@ export default function CameraPage({
                     }}
                     style={{
                       position: "absolute",
-
                       top: 0,
                       left: 0,
 
@@ -871,27 +829,26 @@ export default function CameraPage({
 
                       display: "block",
 
+                      /*
+                       * IMPORTANT:
+                       *
+                       * No CSS mirror here.
+                       */
+
                       transform: "none",
                     }}
                   />
 
-                  {/* LOADING */}
+                  {/* CAMERA LOADING */}
 
                   {(!isCameraReady || isSwitchingCamera) && (
                     <div
                       style={{
                         position: "absolute",
-
-                        top: 0,
-                        left: 0,
-
-                        width: "100%",
-                        height: "100%",
+                        inset: 0,
 
                         display: "flex",
-
                         alignItems: "center",
-
                         justifyContent: "center",
 
                         background: "rgba(0,0,0,0.75)",
@@ -960,12 +917,9 @@ export default function CameraPage({
                     className="frameContainer flex-row-center"
                     style={{
                       position: "absolute",
-
-                      top: 0,
-                      left: 0,
+                      inset: 0,
 
                       width: "100%",
-
                       height: "100%",
 
                       zIndex: 3,
@@ -983,9 +937,9 @@ export default function CameraPage({
               {!isCaptured && (
                 <button
                   type="button"
+                  className="cameraSwitchBtn"
                   onClick={switchCamera}
                   disabled={isCounting || isSwitchingCamera}
-                  className="cameraSwitchBtn"
                   aria-label="Switch camera"
                 >
                   <MdCameraswitch />
@@ -1000,15 +954,12 @@ export default function CameraPage({
                   alt="capturedImg"
                   style={{
                     position: "absolute",
-
                     inset: 0,
 
                     width: "100%",
-
                     height: "100%",
 
                     objectFit: "cover",
-
                     objectPosition: "center",
 
                     zIndex: 1,
